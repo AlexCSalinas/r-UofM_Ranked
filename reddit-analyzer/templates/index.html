@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>r/{{ subreddit }} Community Analysis</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold mb-8 text-center">Top Contributors in r/{{ subreddit }}</h1>
+        
+        <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {% for username, stats in contributors.items() %}
+            <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-200">
+                <div class="flex justify-between items-start mb-4">
+                    <h2 class="text-xl font-semibold text-blue-600">u/{{ username }}</h2>
+                    <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
+                        Rank #{{ loop.index }}
+                    </span>
+                </div>
+                
+                <div class="space-y-2">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Total Karma:</span>
+                        <span class="font-medium">{{ stats.total_karma }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Posts:</span>
+                        <span class="font-medium">{{ stats.post_count }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Comments:</span>
+                        <span class="font-medium">{{ stats.comment_count }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Awards:</span>
+                        <span class="font-medium">{{ stats.awards_received }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Last Active:</span>
+                        <span class="font-medium">{{ stats.last_active }}</span>
+                    </div>
+                </div>
+                
+                <div class="mt-4 pt-4 border-t">
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600">Engagement Score:</span>
+                        <span class="font-medium text-green-600">
+                            {{ "%.1f"|format(stats.engagement_score) }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,4 @@
+# requirements.txt
+flask==2.0.1
+praw==7.7.0
+pandas==1.5.3
