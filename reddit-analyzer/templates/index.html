@@ -6,49 +6,83 @@
     <title>r/{{ subreddit }} Community Analysis</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Reddit custom styles */
+        :root {
+            --reddit-orange: #FF4500;
+            --reddit-background: #DAE0E6;
+            --reddit-card: #FFFFFF;
+            --reddit-text: #1A1A1B;
+            --reddit-light-text: #7C7C7C;
+        }
+        body {
+            font-family: Verdana, Arial, Helvetica, sans-serif;
+            background-color: var(--reddit-background);
+        }
+        .reddit-link {
+            color: var(--reddit-orange);
+            text-decoration: none;
+        }
+        .reddit-link:hover {
+            text-decoration: underline;
+        }
+        .reddit-card {
+            background-color: var(--reddit-card);
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+        .reddit-card:hover {
+            border-color: #898989;
+        }
+    </style>
 </head>
-<body class="bg-gray-100">
-    <div class="container mx-auto px-4 py-8">
-        <h1 class="text-3xl font-bold mb-8 text-center">Top Contributors in r/{{ subreddit }}</h1>
-        
-        <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+<body>
+    <div class="container mx-auto px-4 py-8 max-w-5xl">
+        <h1 class="text-3xl font-bold mb-8 text-center text-[#1A1A1B]">Top Contributors in r/{{ subreddit }} this past week</h1>
+        <div class="text-center text-gray-600 mb-8">
+            {% if last_updated %}
+                Last updated: {{ last_updated }}
+            {% else %}
+                Data currently unavailable
+            {% endif %}
+        </div>
+        <div class="grid gap-4 md:grid-cols-1 lg:grid-cols-2">
             {% for username, stats in contributors.items() %}
-            <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-200">
+            <div class="reddit-card p-4">
                 <div class="flex justify-between items-start mb-4">
-                    <h2 class="text-xl font-semibold text-blue-600">u/{{ username }}</h2>
-                    <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
+                    <a href="https://reddit.com/u/{{ username }}" target="_blank" class="reddit-link text-lg font-semibold">
+                        u/{{ username }}
+                    </a>
+                    <span class="bg-[#F6F7F8] text-[#1A1A1B] text-xs font-medium px-2 py-1 rounded">
                         Rank #{{ loop.index }}
                     </span>
                 </div>
                 
                 <div class="space-y-2">
                     <div class="flex justify-between">
-                        <span class="text-gray-600">Total Karma:</span>
-                        <span class="font-medium">{{ stats.total_karma }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-600">Posts:</span>
+                        <span class="text-[#7C7C7C]">Posts:</span>
                         <span class="font-medium">{{ stats.post_count }}</span>
                     </div>
                     <div class="flex justify-between">
-                        <span class="text-gray-600">Comments:</span>
+                        <span class="text-[#7C7C7C]">Comments:</span>
                         <span class="font-medium">{{ stats.comment_count }}</span>
                     </div>
                     <div class="flex justify-between">
-                        <span class="text-gray-600">Awards:</span>
-                        <span class="font-medium">{{ stats.awards_received }}</span>
+                        <span class="text-[#7C7C7C]">Total Activity:</span>
+                        <span class="font-medium">{{ stats.total_activity }}</span>
                     </div>
                     <div class="flex justify-between">
-                        <span class="text-gray-600">Last Active:</span>
+                        <span class="text-[#7C7C7C]">Last Active:</span>
                         <span class="font-medium">{{ stats.last_active }}</span>
                     </div>
                 </div>
                 
-                <div class="mt-4 pt-4 border-t">
+                <div class="mt-4 pt-4 border-t border-[#EDEFF1]">
                     <div class="flex justify-between items-center">
-                        <span class="text-gray-600">Elo:</span>
-                        <span class="font-medium text-green-600">
-                            {{ "%.1f"|format(stats.engagement_score) }}
+                        <span class="text-[#7C7C7C]">Activity Score:</span>
+                        <span class="font-medium text-[#FF4500]">
+                            {{ stats.total_activity }}
                         </span>
                     </div>
                 </div>
@@ -58,24 +92,19 @@
 
         <!-- Activity Chart Section -->
         <div class="mt-8">
-            <h2 class="text-2xl font-bold mb-4 text-center">Monthyly Community Activity Times</h2>
-            <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-2xl font-bold mb-4 text-center text-[#1A1A1B]">Monthly Community Activity Times</h2>
+            <div class="reddit-card p-6">
                 <canvas id="activityChart" class="w-full" style="height: 400px;"></canvas>
             </div>
         </div>
     </div>
-
-    <!-- Chart initialization script -->
+    
     <!-- Chart initialization script -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Parse the activity data from the server-side template
             const activityData = JSON.parse('{{ activity_data|tojson|safe }}');
-            
-            // Get the canvas context
             const ctx = document.getElementById('activityChart').getContext('2d');
             
-            // Create the chart
             const chart = new Chart(ctx, {
                 type: 'bar',
                 data: {
@@ -83,8 +112,8 @@
                     datasets: [{
                         label: 'Activity Count',
                         data: activityData.map(d => d.count),
-                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
-                        borderColor: 'rgb(59, 130, 246)',
+                        backgroundColor: 'rgba(255, 69, 0, 0.2)',
+                        borderColor: '#FF4500',
                         borderWidth: 1,
                         borderRadius: 4
                     }]
@@ -97,16 +126,18 @@
                             display: false
                         },
                         tooltip: {
-                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            backgroundColor: 'rgba(26, 26, 27, 0.9)',
                             padding: 12,
                             titleColor: 'white',
                             bodyColor: 'white',
                             titleFont: {
                                 size: 14,
-                                weight: 'bold'
+                                weight: 'bold',
+                                family: 'Verdana, Arial, sans-serif'
                             },
                             bodyFont: {
-                                size: 14
+                                size: 14,
+                                family: 'Verdana, Arial, sans-serif'
                             },
                             callbacks: {
                                 label: function(context) {
@@ -119,11 +150,12 @@
                         y: {
                             beginAtZero: true,
                             grid: {
-                                color: 'rgba(0, 0, 0, 0.1)'
+                                color: 'rgba(0, 0, 0, 0.06)'
                             },
                             ticks: {
                                 font: {
-                                    size: 12
+                                    size: 12,
+                                    family: 'Verdana, Arial, sans-serif'
                                 }
                             }
                         },
@@ -133,7 +165,8 @@
                             },
                             ticks: {
                                 font: {
-                                    size: 12
+                                    size: 12,
+                                    family: 'Verdana, Arial, sans-serif'
                                 }
                             }
                         }
