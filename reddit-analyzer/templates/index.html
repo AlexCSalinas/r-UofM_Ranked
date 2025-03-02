@@ -6,6 +6,7 @@
     <title>r/{{ subreddit }} Community Analysis</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.1.0/dist/chartjs-plugin-annotation.min.js"></script>
     <style>
         /* Reddit custom styles */
         :root {
@@ -14,166 +15,1179 @@
             --reddit-card: #FFFFFF;
             --reddit-text: #1A1A1B;
             --reddit-light-text: #7C7C7C;
+            --reddit-border: #ccc;
+            --reddit-hover-border: #898989;
+            --chart-grid: rgba(0, 0, 0, 0.06);
+            --tooltip-bg: rgba(26, 26, 27, 0.9);
         }
+        
+        /* Dark mode variables */
+        [data-theme="dark"] {
+            --reddit-orange: #FF4500;
+            --reddit-background: #1A1A1B;
+            --reddit-card: #272729;
+            --reddit-text: #D7DADC;
+            --reddit-light-text: #818384;
+            --reddit-border: #343536;
+            --reddit-hover-border: #818384;
+            --chart-grid: rgba(255, 255, 255, 0.06);
+            --tooltip-bg: rgba(50, 50, 50, 0.9);
+        }
+        
         body {
             font-family: Verdana, Arial, Helvetica, sans-serif;
             background-color: var(--reddit-background);
+            color: var(--reddit-text);
+            overflow-x: hidden;
         }
+        
         .reddit-link {
             color: var(--reddit-orange);
             text-decoration: none;
         }
+        
         .reddit-link:hover {
             text-decoration: underline;
         }
+        
         .reddit-card {
             background-color: var(--reddit-card);
-            border: 1px solid #ccc;
+            border: 1px solid var(--reddit-border);
             border-radius: 4px;
             transition: all 0.2s ease;
         }
+        
         .reddit-card:hover {
-            border-color: #898989;
+            border-color: var(--reddit-hover-border);
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--reddit-text);
+        }
+        
+        /* Toggle switch styling */
+        .theme-switch-wrapper {
+            display: flex;
+            align-items: center;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+        }
+        
+        .theme-switch {
+            display: inline-block;
+            height: 24px;
+            position: relative;
+            width: 50px;
+        }
+        
+        .theme-switch input {
+            display: none;
+        }
+        
+        .slider {
+            background-color: #ccc;
+            bottom: 0;
+            cursor: pointer;
+            left: 0;
+            position: absolute;
+            right: 0;
+            top: 0;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        
+        .slider:before {
+            background-color: white;
+            bottom: 4px;
+            content: "";
+            height: 16px;
+            left: 4px;
+            position: absolute;
+            transition: .4s;
+            width: 16px;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: var(--reddit-orange);
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        
+        .theme-icon {
+            margin: 0 10px;
+            color: var(--reddit-text);
+        }
+        
+        /* Responsive tables */
+        @media (max-width: 640px) {
+            table {
+                display: block;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            th, td {
+                white-space: nowrap;
+            }
+            
+            /* Hide less important columns on very small screens */
+            @media (max-width: 360px) {
+                .hide-xs {
+                    display: none;
+                }
+            }
+        }
+        
+        /* Mobile optimizations */
+        @media (max-width: 768px) {
+            .container {
+                padding: 0.5rem !important;
+            }
+            h1 {
+                font-size: 1.5rem !important;
+            }
+            h2 {
+                font-size: 1.25rem !important;
+            }
+            .reddit-card {
+                padding: 0.75rem !important;
+            }
+            table th, table td {
+                padding: 0.5rem 0.25rem !important;
+                font-size: 0.875rem !important;
+            }
+        }
+        
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        /* Loading animation */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--reddit-background);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid var(--reddit-orange);
+            border-bottom-color: transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Print styles */
+        @media print {
+            body {
+                background-color: white !important;
+                color: black !important;
+            }
+            .reddit-card {
+                break-inside: avoid;
+                background-color: white !important;
+                border: 1px solid #ddd !important;
+                box-shadow: none !important;
+                margin-bottom: 2rem !important;
+            }
+            .theme-switch-wrapper, 
+            button, 
+            select,
+            .filters-card {
+                display: none !important;
+            }
+            h1, h2, h3 {
+                color: black !important;
+            }
+            canvas {
+                max-height: 300px !important;
+            }
+            .nav-header {
+                display: none !important;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- Loading overlay -->
+    <div class="loading-overlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <!-- Navigation header -->
+    <nav class="bg-[var(--reddit-card)] shadow-md sticky top-0 z-50 nav-header">
+        <div class="container mx-auto px-4 py-2">
+            <div class="flex justify-between items-center">
+                <!-- Left side - Logo and title -->
+                <div class="flex items-center">
+                    <div class="text-[var(--reddit-orange)] mr-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-8 h-8">
+                            <path d="M10 0C4.478 0 0 4.478 0 10c0 5.523 4.478 10 10 10 5.523 0 10-4.477 10-10 0-5.522-4.477-10-10-10z"/>
+                            <path fill="white" d="M16.671 10c0-.875-.704-1.583-1.569-1.583-.438 0-.828.171-1.103.444-1.086-.737-2.584-1.208-4.253-1.266l.85-3.003 2.442.533c.031.658.56 1.175 1.225 1.175.68 0 1.237-.546 1.237-1.228 0-.683-.557-1.229-1.237-1.229-.48 0-.903.275-1.096.686l-2.737-.598a.329.329 0 00-.391.219l-1.022 3.616c-1.719.026-3.218.497-4.333 1.234a1.581 1.581 0 00-1.117-.444c-.865 0-1.569.708-1.569 1.583 0 .657.387 1.212.943 1.462a3.083 3.083 0 00-.027.448c0 2.291 2.665 4.145 5.952 4.145 3.288 0 5.954-1.854 5.954-4.145 0-.152-.01-.302-.026-.448.556-.25.942-.805.942-1.462z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-bold text-[var(--reddit-text)]">r/{{ subreddit }} Analytics</h1>
+                    </div>
+                </div>
+                
+                <!-- Right side - Mobile menu button -->
+                <div class="md:hidden">
+                    <button id="mobileMenuBtn" class="p-2 rounded-md text-[var(--reddit-text)] hover:bg-gray-100 focus:outline-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-6 w-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                </div>
+                
+                <!-- Desktop navigation links -->
+                <div class="hidden md:flex space-x-4">
+                    <a href="#contributors" class="px-3 py-2 rounded-md text-sm font-medium text-[var(--reddit-text)] hover:bg-gray-100">Contributors</a>
+                    <a href="#rising-stars" class="px-3 py-2 rounded-md text-sm font-medium text-[var(--reddit-text)] hover:bg-gray-100">Rising Stars</a>
+                    <a href="#activity" class="px-3 py-2 rounded-md text-sm font-medium text-[var(--reddit-text)] hover:bg-gray-100">Activity</a>
+                    <span class="text-[var(--reddit-light-text)] self-center">|</span>
+                    <span class="text-sm self-center text-[var(--reddit-light-text)]">Last updated: {{ last_updated }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile menu (hidden by default) -->
+        <div id="mobileMenu" class="hidden md:hidden bg-[var(--reddit-card)] pb-2 shadow-inner">
+            <div class="px-2 pt-2 pb-3 space-y-1">
+                <a href="#contributors" class="block px-3 py-2 rounded-md text-base font-medium text-[var(--reddit-text)] hover:bg-gray-100">Contributors</a>
+                <a href="#rising-stars" class="block px-3 py-2 rounded-md text-base font-medium text-[var(--reddit-text)] hover:bg-gray-100">Rising Stars</a>
+                <a href="#activity" class="block px-3 py-2 rounded-md text-base font-medium text-[var(--reddit-text)] hover:bg-gray-100">Activity</a>
+                <div class="px-3 py-2 text-sm text-[var(--reddit-light-text)]">
+                    Last updated: {{ last_updated }}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Theme toggle -->
+    <div class="theme-switch-wrapper">
+        <div class="theme-icon">☀️</div>
+        <label class="theme-switch" for="checkbox">
+            <input type="checkbox" id="checkbox" />
+            <div class="slider"></div>
+        </label>
+        <div class="theme-icon">🌙</div>
+    </div>
+
+    <!-- Main content container -->
     <div class="container mx-auto px-4 py-8 max-w-5xl">
-        <h1 class="text-3xl font-bold mb-8 text-center text-[#1A1A1B]">Top Contributors in r/{{ subreddit }} this past week</h1>
-        <div class="text-center text-gray-600 mb-8">
+        <h1 class="text-2xl font-bold mb-4 text-center text-[var(--reddit-text)]">Community Analysis for r/{{ subreddit }}</h1>
+        <div class="text-center text-[var(--reddit-light-text)] mb-8">
             {% if last_updated %}
                 Last updated: {{ last_updated }}
             {% else %}
                 Data currently unavailable
             {% endif %}
         </div>
-        <div class="grid gap-4 md:grid-cols-1 lg:grid-cols-2">
-            {% for username, stats in contributors.items() %}
-            <div class="reddit-card p-4">
-                <div class="flex justify-between items-start mb-4">
-                    <a href="https://reddit.com/u/{{ username }}" target="_blank" class="reddit-link text-lg font-semibold">
-                        u/{{ username }}
-                    </a>
-                    <span class="bg-[#F6F7F8] text-[#1A1A1B] text-xs font-medium px-2 py-1 rounded">
-                        Rank #{{ loop.index }}
-                    </span>
+
+        <!-- Data filters card -->
+        <div class="reddit-card p-4 mb-8 filters-card">
+            <div class="flex flex-col md:flex-row justify-between items-center mb-4">
+                <h3 class="text-xl font-bold mb-2 md:mb-0 text-[var(--reddit-text)]">Data Filters</h3>
+                <div class="flex flex-wrap gap-2">
+                    <button id="toggleCompactView" class="px-3 py-1.5 bg-gray-200 hover:bg-gray-300 rounded text-sm font-medium transition-colors">
+                        <span id="viewModeText">Enable Compact View</span>
+                    </button>
+                    <button id="printReport" class="px-3 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded text-sm font-medium transition-colors">
+                        Print Report
+                    </button>
+                </div>
+            </div>
+            
+            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                <!-- User Type Filter -->
+                <div>
+                    <label class="block text-[var(--reddit-light-text)] text-sm font-medium mb-2">User Type</label>
+                    <select id="userTypeFilter" class="w-full p-2 border border-gray-300 rounded bg-[var(--reddit-card)] text-[var(--reddit-text)]">
+                        <option value="all">All Users</option>
+                        <option value="new">New Users Only</option>
+                        <option value="rising">Rising Users Only</option>
+                        <option value="top">Top 5 Users Only</option>
+                    </select>
                 </div>
                 
-                <div class="space-y-2">
-                    <div class="flex justify-between">
-                        <span class="text-[#7C7C7C]">Posts:</span>
-                        <span class="font-medium">{{ stats.post_count }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-[#7C7C7C]">Comments:</span>
-                        <span class="font-medium">{{ stats.comment_count }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-[#7C7C7C]">Total Activity:</span>
-                        <span class="font-medium">{{ stats.total_activity }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-[#7C7C7C]">Last Active:</span>
-                        <span class="font-medium">{{ stats.last_active }}</span>
-                    </div>
+                <!-- Sort Order -->
+                <div>
+                    <label class="block text-[var(--reddit-light-text)] text-sm font-medium mb-2">Sort By</label>
+                    <select id="sortOrderFilter" class="w-full p-2 border border-gray-300 rounded bg-[var(--reddit-card)] text-[var(--reddit-text)]">
+                        <option value="rank">Rank (Default)</option>
+                        <option value="posts">Most Posts</option>
+                        <option value="comments">Most Comments</option>
+                        <option value="trend-up">Biggest Improvement</option>
+                        <option value="trend-down">Biggest Drop</option>
+                    </select>
                 </div>
                 
-                <div class="mt-4 pt-4 border-t border-[#EDEFF1]">
-                    <div class="flex justify-between items-center">
-                        <span class="text-[#7C7C7C]">Activity Score:</span>
-                        <span class="font-medium text-[#FF4500]">
-                            {{ stats.total_activity }}
-                        </span>
+                <!-- Activity Time Range -->
+                <div>
+                    <label class="block text-[var(--reddit-light-text)] text-sm font-medium mb-2">Activity Hours</label>
+                    <div class="flex items-center space-x-2">
+                        <select id="timeRangeFilter" class="flex-1 p-2 border border-gray-300 rounded bg-[var(--reddit-card)] text-[var(--reddit-text)]">
+                            <option value="all">All Hours</option>
+                            <option value="peak">Peak Hours Only</option>
+                            <option value="morning">Morning (6-12)</option>
+                            <option value="afternoon">Afternoon (12-18)</option>
+                            <option value="evening">Evening (18-24)</option>
+                            <option value="night">Night (0-6)</option>
+                        </select>
+                        <button id="resetFilters" class="p-2 bg-gray-200 hover:bg-gray-300 rounded text-xs font-medium transition-colors">
+                            Reset
+                        </button>
                     </div>
                 </div>
             </div>
-            {% endfor %}
         </div>
 
+        <!-- Top Contributors section -->
+        <div class="mt-8" id="contributors">
+            <h2 class="text-2xl font-bold mb-4 text-center text-[var(--reddit-text)]">Top 10 Contributors Leaderboard</h2>
+            <div class="reddit-card p-4">
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="p-2 text-left">Rank</th>
+                                <th class="p-2 text-left">User</th>
+                                <th class="p-2 text-center">Posts</th>
+                                <th class="p-2 text-center">Comments</th>
+                                <th class="p-2 text-center">Activity</th>
+                                <th class="p-2 text-center">Trend</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for username, stats in contributors.items() %}
+                            {% if loop.index <= 10 %}
+                            <tr class="border-b hover:bg-gray-50 transition-colors">
+                                <td class="p-2 font-bold">{{ stats.current_rank }}</td>
+                                <td class="p-2">
+                                    <div class="flex items-center">
+                                        <a href="https://reddit.com/u/{{ username }}" target="_blank" class="reddit-link">
+                                            u/{{ username }}
+                                        </a>
+                                        {% if stats.position_change == 'new' %}
+                                        <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">New!</span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td class="p-2 text-center">{{ stats.post_count }}</td>
+                                <td class="p-2 text-center">{{ stats.comment_count }}</td>
+                                <td class="p-2 text-center font-medium">{{ stats.total_activity }}</td>
+                                <td class="p-2 text-center">
+                                    {% if stats.position_change == 'new' %}
+                                        <span class="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded">New</span>
+                                    {% elif stats.position_change > 0 %}
+                                        <span class="text-green-600 font-bold flex items-center justify-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd" />
+                                            </svg>
+                                            {{ stats.position_change }}
+                                        </span>
+                                    {% elif stats.position_change < 0 %}
+                                        <span class="text-red-600 font-bold flex items-center justify-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                            </svg>
+                                            {{ stats.position_change|abs }}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-gray-600">-</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rising Stars Section -->
+        {% if rising_stars %}
+        <div class="mt-8" id="rising-stars">
+            <h2 class="text-2xl font-bold mb-4 text-center text-[var(--reddit-text)]">Rising Stars</h2>
+            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {% for star in rising_stars %}
+                <div class="reddit-card p-4 relative overflow-hidden">
+                    <!-- Stylish badge in top right corner -->
+                    <div class="absolute top-0 right-0">
+                        <div class="w-16 h-16 text-center rotate-45 bg-yellow-500 text-white font-bold transform translate-x-6 -translate-y-2">
+                            <div class="mt-10 -rotate-45">⭐</div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-col h-full">
+                        <div class="mb-2">
+                            <a href="https://reddit.com/u/{{ star.username }}" target="_blank" class="reddit-link text-lg font-semibold">
+                                u/{{ star.username }}
+                            </a>
+                            <div class="text-sm text-[var(--reddit-light-text)] mt-1">Rank #{{ star.stats.current_rank }}</div>
+                        </div>
+                        
+                        <div class="bg-yellow-50 rounded-lg p-3 mb-3">
+                            <div class="text-yellow-800 font-medium">{{ star.reason }}</div>
+                        </div>
+                        
+                        <div class="space-y-2 mt-auto">
+                            <div class="flex justify-between">
+                                <span class="text-[var(--reddit-light-text)]">Posts:</span>
+                                <span class="font-medium">{{ star.stats.post_count }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-[var(--reddit-light-text)]">Comments:</span>
+                                <span class="font-medium">{{ star.stats.comment_count }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-[var(--reddit-light-text)]">Activity:</span>
+                                <span class="font-medium">{{ star.stats.total_activity }}</span>
+                            </div>
+                            {% if star.stats.streak %}
+                            <div class="flex justify-between">
+                                <span class="text-[var(--reddit-light-text)]">Streak:</span>
+                                <span class="font-medium">{{ star.stats.streak }} days</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        {% if star.stats.position_change != 'new' and star.stats.position_change > 0 %}
+                        <div class="mt-3 pt-3 border-t border-[#EDEFF1] text-center">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd" />
+                                </svg>
+                                Up {{ star.stats.position_change }} ranks
+                            </span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
         <!-- Activity Chart Section -->
-        <div class="mt-8">
-            <h2 class="text-2xl font-bold mb-4 text-center text-[#1A1A1B]">Monthly Community Activity Times</h2>
-            <div class="reddit-card p-6">
-                <canvas id="activityChart" class="w-full" style="height: 400px;"></canvas>
+        <div class="mt-8" id="activity">
+            <h2 class="text-2xl font-bold mb-4 text-center text-[var(--reddit-text)]">Community Activity Times</h2>
+            <div class="reddit-card p-4">
+                <!-- Loading indicator that will be hidden when chart is ready -->
+                <div id="chartLoading" class="flex justify-center items-center py-8">
+                    <div class="w-12 h-12 border-4 border-[var(--reddit-orange)] border-t-transparent rounded-full animate-spin"></div>
+                    <span class="ml-3 text-[var(--reddit-text)]">Loading chart...</span>
+                </div>
+                
+                <!-- Chart container with controlled height -->
+                <div style="height: 300px; position: relative;">
+                    <canvas id="activityChart" class="w-full h-full"></canvas>
+                </div>
+                
+                <!-- Insights section that will be populated by JavaScript -->
+                <div id="chartInsights" class="mt-4 pt-4 border-t border-[var(--reddit-border)] text-[var(--reddit-text)]"></div>
             </div>
         </div>
     </div>
+
+    <!-- Back to Top Button -->
+    <button id="backToTopBtn" class="fixed bottom-4 right-4 bg-[var(--reddit-orange)] text-white p-3 rounded-full shadow-lg z-50 opacity-0 pointer-events-none transition-opacity duration-300">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd" />
+        </svg>
+    </button>
     
-    <!-- Chart initialization script -->
+    <!-- Scripts -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const activityData = JSON.parse('{{ activity_data|tojson|safe }}');
-            const ctx = document.getElementById('activityChart').getContext('2d');
+    // Main application script - handles all interactive features
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize components
+        initMobileMenu();
+        initBackToTop();
+        initThemeToggle();
+        initFilters();
+        initChart();
+        setTimeout(createUserSparklines, 500);
+        
+        // Hide the loading overlay when everything is ready
+        window.addEventListener('load', function() {
+            document.querySelector('.loading-overlay').style.display = 'none';
+        });
+        
+        // Make sections collapsible on mobile
+        makeCollapsible();
+        window.addEventListener('resize', makeCollapsible);
+    });
+    
+    // Mobile menu functionality
+    function initMobileMenu() {
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+        
+        if (mobileMenuBtn && mobileMenu) {
+            mobileMenuBtn.addEventListener('click', function() {
+                mobileMenu.classList.toggle('hidden');
+            });
             
-            const chart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: activityData.map(d => `${d.hour}:00`),
-                    datasets: [{
-                        label: 'Activity Count',
-                        data: activityData.map(d => d.count),
-                        backgroundColor: 'rgba(255, 69, 0, 0.2)',
-                        borderColor: '#FF4500',
-                        borderWidth: 1,
-                        borderRadius: 4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            backgroundColor: 'rgba(26, 26, 27, 0.9)',
-                            padding: 12,
-                            titleColor: 'white',
-                            bodyColor: 'white',
-                            titleFont: {
-                                size: 14,
-                                weight: 'bold',
-                                family: 'Verdana, Arial, sans-serif'
-                            },
-                            bodyFont: {
-                                size: 14,
-                                family: 'Verdana, Arial, sans-serif'
-                            },
-                            callbacks: {
-                                label: function(context) {
-                                    return `Activities: ${context.raw}`;
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: {
-                                color: 'rgba(0, 0, 0, 0.06)'
-                            },
-                            ticks: {
-                                font: {
-                                    size: 12,
-                                    family: 'Verdana, Arial, sans-serif'
-                                }
-                            }
-                        },
-                        x: {
-                            grid: {
-                                display: false
-                            },
-                            ticks: {
-                                font: {
-                                    size: 12,
-                                    family: 'Verdana, Arial, sans-serif'
-                                }
-                            }
-                        }
-                    }
+            // Close menu when clicking on a navigation link
+            const navLinks = mobileMenu.querySelectorAll('a');
+            navLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    mobileMenu.classList.add('hidden');
+                });
+            });
+        }
+        
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                
+                if (targetElement) {
+                    // Add offset for the sticky header
+                    const headerOffset = 70;
+                    const elementPosition = targetElement.getBoundingClientRect().top;
+                    const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                    
+                    window.scrollTo({
+                        top: offsetPosition,
+                        behavior: 'smooth'
+                    });
                 }
             });
         });
+    }
+    
+    // Back to top button
+    function initBackToTop() {
+        const backToTopBtn = document.getElementById('backToTopBtn');
+        
+        window.addEventListener('scroll', function() {
+            if (window.pageYOffset > 300) {
+                backToTopBtn.classList.add('opacity-100');
+                backToTopBtn.classList.remove('pointer-events-none');
+            } else {
+                backToTopBtn.classList.remove('opacity-100');
+                backToTopBtn.classList.add('pointer-events-none');
+            }
+        });
+        
+        backToTopBtn.addEventListener('click', function() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+    }
+    
+    // Theme toggle functionality
+    function initThemeToggle() {
+        const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
+        
+        // Check for saved theme preference
+        const currentTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', currentTheme);
+        
+        // Set checkbox based on current theme
+        if (currentTheme === 'dark') {
+            toggleSwitch.checked = true;
+        }
+        
+        // Handle theme switch
+        function switchTheme(e) {
+            if (e.target.checked) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+                updateChartColors('dark');
+            } else {
+                document.documentElement.setAttribute('data-theme', 'light');
+                localStorage.setItem('theme', 'light');
+                updateChartColors('light');
+            }
+        }
+        
+        // Update chart colors when theme changes
+        function updateChartColors(theme) {
+            if (window.activityChart) {
+                const isDark = theme === 'dark';
+                
+                // Update grid colors
+                window.activityChart.options.scales.y.grid.color = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)';
+                window.activityChart.options.scales.x.ticks.color = isDark ? '#D7DADC' : '#1A1A1B';
+                window.activityChart.options.scales.y.ticks.color = isDark ? '#D7DADC' : '#1A1A1B';
+                
+                // Update tooltip style
+                window.activityChart.options.plugins.tooltip.backgroundColor = isDark ? 'rgba(70, 70, 70, 0.9)' : 'rgba(26, 26, 27, 0.9)';
+                
+                // Update chart
+                window.activityChart.update();
+            }
+        }
+        
+        toggleSwitch.addEventListener('change', switchTheme, false);
+        
+        // Apply theme to charts on initial load
+        setTimeout(() => {
+            updateChartColors(currentTheme);
+        }, 1000);
+    }
+    
+    // Filtering and UI enhancement functionality
+    function initFilters() {
+        // Get filter elements
+        const userTypeFilter = document.getElementById('userTypeFilter');
+        const sortOrderFilter = document.getElementById('sortOrderFilter');
+        const timeRangeFilter = document.getElementById('timeRangeFilter');
+        const resetFiltersBtn = document.getElementById('resetFilters');
+        const toggleCompactViewBtn = document.getElementById('toggleCompactView');
+        const printReportBtn = document.getElementById('printReport');
+        
+        // Skip if filters aren't available
+        if (!userTypeFilter || !sortOrderFilter) return;
+        
+        // Track if we're in compact view
+        let isCompactView = false;
+        
+        // Filter the user rows based on selected filters
+        function applyFilters() {
+            const userType = userTypeFilter.value;
+            const sortOrder = sortOrderFilter.value;
+            const timeRange = timeRangeFilter ? timeRangeFilter.value : 'all';
+            
+            // Get all user rows in the table
+            const userTable = document.querySelector('table');
+            if (!userTable) return;
+            
+            const userRows = Array.from(userTable.querySelectorAll('tbody tr'));
+            
+            // Filter by user type
+            let filteredRows = userRows;
+            if (userType === 'new') {
+                filteredRows = userRows.filter(row => {
+                    const newBadge = row.querySelector('span.bg-green-100.text-green-800');
+                    return newBadge !== null;
+                });
+            } else if (userType === 'rising') {
+                filteredRows = userRows.filter(row => {
+                    const trend = row.querySelector('td:nth-child(6)');
+                    return trend && trend.textContent.includes('↑');
+                });
+            } else if (userType === 'top') {
+                filteredRows = userRows.slice(0, 5);
+            }
+            
+            // Sort by selected criteria
+            if (sortOrder === 'posts') {
+                filteredRows.sort((a, b) => {
+                    const postsA = parseInt(a.querySelector('td:nth-child(3)').textContent);
+                    const postsB = parseInt(b.querySelector('td:nth-child(3)').textContent);
+                    return postsB - postsA;
+                });
+            } else if (sortOrder === 'comments') {
+                filteredRows.sort((a, b) => {
+                    const commentsA = parseInt(a.querySelector('td:nth-child(4)').textContent);
+                    const commentsB = parseInt(b.querySelector('td:nth-child(4)').textContent);
+                    return commentsB - commentsA;
+                });
+            } else if (sortOrder === 'trend-up') {
+                filteredRows.sort((a, b) => {
+                    const trendA = a.querySelector('td:nth-child(6)');
+                    const trendB = b.querySelector('td:nth-child(6)');
+                    const valueA = trendA && trendA.textContent.includes('↑') ? 
+                        parseInt(trendA.textContent.match(/\d+/)?.[0] || 0) : -999;
+                    const valueB = trendB && trendB.textContent.includes('↑') ? 
+                        parseInt(trendB.textContent.match(/\d+/)?.[0] || 0) : -999;
+                    return valueB - valueA;
+                });
+            } else if (sortOrder === 'trend-down') {
+                filteredRows.sort((a, b) => {
+                    const trendA = a.querySelector('td:nth-child(6)');
+                    const trendB = b.querySelector('td:nth-child(6)');
+                    const valueA = trendA && trendA.textContent.includes('↓') ? 
+                        parseInt(trendA.textContent.match(/\d+/)?.[0] || 0) : -999;
+                    const valueB = trendB && trendB.textContent.includes('↓') ? 
+                        parseInt(trendB.textContent.match(/\d+/)?.[0] || 0) : -999;
+                    return valueB - valueA;
+                });
+            }
+            
+            // Hide all rows first
+            userRows.forEach(row => row.style.display = 'none');
+            
+            // Show filtered rows
+            filteredRows.forEach(row => row.style.display = '');
+            
+            // Update the chart based on time range
+            if (window.activityChart && window.activityData) {
+                let hoursToShow;
+                
+                switch(timeRange) {
+                    case 'peak':
+                        // Show only peak hours (those above average)
+                        const avgActivity = window.activityChart.data.datasets[1].data[0];
+                        hoursToShow = window.activityData.map((d, i) => d.count > avgActivity ? i : null).filter(i => i !== null);
+                        break;
+                    case 'morning':
+                        hoursToShow = Array.from({length: 7}, (_, i) => i + 6); // 6-12
+                        break;
+                    case 'afternoon':
+                        hoursToShow = Array.from({length: 6}, (_, i) => i + 12); // 12-18
+                        break;
+                    case 'evening':
+                        hoursToShow = Array.from({length: 6}, (_, i) => i + 18); // 18-24
+                        break;
+                    case 'night':
+                        hoursToShow = Array.from({length: 6}, (_, i) => i); // 0-6
+                        break;
+                    default:
+                        hoursToShow = Array.from({length: 24}, (_, i) => i); // All hours
+                }
+                
+                // Create a new filtered dataset
+                const filteredData = window.activityChart.data.datasets[0].data.map((value, index) => 
+                    hoursToShow.includes(index) ? value : null
+                );
+                
+                // Apply the filter
+                window.activityChart.data.datasets[0].data = timeRange === 'all' ? 
+                    window.activityData.map(d => d.count) : filteredData;
+                
+                window.activityChart.update();
+            }
+        }
+        
+        // Toggle compact view
+        function toggleCompactView() {
+            const mainContainer = document.querySelector('.container');
+            const userCards = document.querySelectorAll('.reddit-card');
+            const viewModeText = document.getElementById('viewModeText');
+            
+            isCompactView = !isCompactView;
+            
+            if (isCompactView) {
+                // Enable compact view
+                mainContainer.classList.add('max-w-full');
+                mainContainer.classList.remove('max-w-5xl');
+                userCards.forEach(card => {
+                    card.classList.add('compact-view');
+                    card.style.margin = '0.5rem 0';
+                    card.style.padding = '0.75rem';
+                });
+                viewModeText.textContent = 'Disable Compact View';
+                
+                // Adjust font sizes for compact view
+                document.querySelectorAll('h1').forEach(h => h.style.fontSize = '1.5rem');
+                document.querySelectorAll('h2').forEach(h => h.style.fontSize = '1.25rem');
+                
+                // Make the activity chart smaller
+                const chartContainer = document.getElementById('activityChart').parentNode;
+                chartContainer.style.height = '250px';
+            } else {
+                // Disable compact view
+                mainContainer.classList.remove('max-w-full');
+                mainContainer.classList.add('max-w-5xl');
+                userCards.forEach(card => {
+                    card.classList.remove('compact-view');
+                    card.style.margin = '';
+                    card.style.padding = '';
+                });
+                viewModeText.textContent = 'Enable Compact View';
+                
+                // Reset font sizes
+                document.querySelectorAll('h1').forEach(h => h.style.fontSize = '');
+                document.querySelectorAll('h2').forEach(h => h.style.fontSize = '');
+                
+                // Reset chart size
+                const chartContainer = document.getElementById('activityChart').parentNode;
+                chartContainer.style.height = '300px';
+            }
+            
+            // Update chart after resize
+            if (window.activityChart) {
+                setTimeout(() => {
+                    window.activityChart.resize();
+                }, 300);
+            }
+        }
+        
+        // Print report functionality
+        function printReport() {
+            // Create a print-friendly version
+            const originalTitle = document.title;
+            document.title = `r/${document.querySelector('h1').textContent.split(' ')[3] || '{{ subreddit }}'} Analytics Report`;
+            
+            // Hide the theme toggle and filters during print
+            const themeToggle = document.querySelector('.theme-switch-wrapper');
+            const filtersCard = document.querySelector('.filters-card');
+            const originalThemeToggleDisplay = themeToggle.style.display;
+            const originalFiltersDisplay = filtersCard.style.display;
+            
+            themeToggle.style.display = 'none';
+            filtersCard.style.display = 'none';
+            
+            // Add report date
+            const reportDateDiv = document.createElement('div');
+            reportDateDiv.className = 'print-only text-center mb-4';
+            reportDateDiv.innerHTML = `<p>Report generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</p>`;
+            document.querySelector('h1').after(reportDateDiv);
+            
+            // Print
+            window.print();
+            
+            // Restore original state
+            document.title = originalTitle;
+            themeToggle.style.display = originalThemeToggleDisplay;
+            filtersCard.style.display = originalFiltersDisplay;
+            reportDateDiv.remove();
+        }
+        
+        // Register event listeners
+        if (userTypeFilter) userTypeFilter.addEventListener('change', applyFilters);
+        if (sortOrderFilter) sortOrderFilter.addEventListener('change', applyFilters);
+        if (timeRangeFilter) timeRangeFilter.addEventListener('change', applyFilters);
+        if (resetFiltersBtn) {
+            resetFiltersBtn.addEventListener('click', () => {
+                userTypeFilter.value = 'all';
+                sortOrderFilter.value = 'rank';
+                if (timeRangeFilter) timeRangeFilter.value = 'all';
+                applyFilters();
+            });
+        }
+        
+        if (toggleCompactViewBtn) toggleCompactViewBtn.addEventListener('click', toggleCompactView);
+        if (printReportBtn) printReportBtn.addEventListener('click', printReport);
+    }
+    
+    // Make sections collapsible on mobile
+    function makeCollapsible() {
+        if (window.innerWidth <= 768) {
+            const sections = document.querySelectorAll('.mt-8');
+            
+            sections.forEach((section, index) => {
+                // Skip if already processed
+                if (section.querySelector('.toggle-collapse')) return;
+                
+                if (index === 0) return; // Skip the first section
+                
+                // Add collapsible class
+                const content = section.querySelector('.reddit-card');
+                if (!content) return;
+                
+                content.classList.add('collapsible-section');
+                content.style.overflow = 'hidden';
+                content.style.maxHeight = '3.5rem';
+                content.style.transition = 'max-height 0.3s ease';
+                
+                // Add toggle button
+                const heading = section.querySelector('h2');
+                if (!heading) return;
+                
+                const toggleBtn = document.createElement('button');
+                toggleBtn.className = 'toggle-collapse w-full text-center mt-2 p-2 bg-[var(--reddit-background)] rounded font-bold';
+                toggleBtn.textContent = 'Show More';
+                toggleBtn.setAttribute('aria-expanded', 'false');
+                
+                section.appendChild(toggleBtn);
+                
+                // Toggle functionality
+                toggleBtn.addEventListener('click', () => {
+                    if (content.style.maxHeight === '3.5rem') {
+                        content.style.maxHeight = '2000px';
+                        toggleBtn.textContent = 'Show Less';
+                        toggleBtn.setAttribute('aria-expanded', 'true');
+                    } else {
+                        content.style.maxHeight = '3.5rem';
+                        toggleBtn.textContent = 'Show More';
+                        toggleBtn.setAttribute('aria-expanded', 'false');
+                    }
+                });
+            });
+        }
+    }
+    
+    // Function to fetch user data and create sparklines
+    async function createUserSparklines() {
+        const tableRows = document.querySelectorAll('tbody tr');
+        
+        for (const row of tableRows) {
+            const usernameElement = row.querySelector('td:nth-child(2) a');
+            if (!usernameElement) continue;
+            
+            const username = usernameElement.textContent.trim().substring(2); // Remove the "u/" prefix
+            
+            try {
+                const response = await fetch(`/api/user-stats/${username}`);
+                const userData = await response.json();
+                
+                if (userData.history && userData.history.length > 0) {
+                    // Create a container for the sparkline
+                    const sparklineCell = document.createElement('td');
+                    sparklineCell.className = 'p-2';
+                    
+                    // Create sparkline svg element
+                    const sparkWidth = 80;
+                    const sparkHeight = 20;
+                    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                    svg.setAttribute('width', sparkWidth);
+                    svg.setAttribute('height', sparkHeight);
+                    svg.setAttribute('class', 'sparkline');
+                    
+                    // Get activity values for plotting
+                    const activityValues = userData.history.map(day => day.activity).reverse();
+                    const maxActivity = Math.max(...activityValues, 1);
+                    
+                    // Create polyline for sparkline
+                    const polyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+                    
+                    // Create points for polyline
+                    const points = activityValues.map((value, index) => {
+                        const x = (index / (activityValues.length - 1)) * sparkWidth;
+                        const y = sparkHeight - (value / maxActivity) * sparkHeight;
+                        return `${x},${y}`;
+                    }).join(' ');
+                    
+                    polyline.setAttribute('points', points);
+                    polyline.setAttribute('fill', 'none');
+                    polyline.setAttribute('stroke', '#FF4500');
+                    polyline.setAttribute('stroke-width', '1.5');
+                    
+                    // Add dot for last point
+                    const lastX = sparkWidth;
+                    const lastY = sparkHeight - (activityValues[activityValues.length - 1] / maxActivity) * sparkHeight;
+                    const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    dot.setAttribute('cx', lastX);
+                    dot.setAttribute('cy', lastY);
+                    dot.setAttribute('r', '2');
+                    dot.setAttribute('fill', '#FF4500');
+                    
+                    svg.appendChild(polyline);
+                    svg.appendChild(dot);
+                    sparklineCell.appendChild(svg);
+                    
+                    // Add tooltip with activity trend data
+                    sparklineCell.setAttribute('title', `Activity trend for the last ${activityValues.length} days`);
+                    
+                    // Add streak information
+                    if (userData.streak > 1) {
+                        const streakBadge = document.createElement('span');
+                        streakBadge.className = 'ml-1 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800';
+                        streakBadge.textContent = `${userData.streak}d`;
+                        sparklineCell.appendChild(streakBadge);
+                    }
+                    
+                    // Insert the sparkline cell after the activity column (5th column)
+                    const activityCell = row.querySelector('td:nth-child(5)');
+                    if (activityCell) {
+                        activityCell.after(sparklineCell);
+                    }
+                }
+            } catch (error) {
+                console.error(`Error fetching data for ${username}:`, error);
+            }
+        }
+    }
+    
+    // Optimized chart initialization
+    function initChart() {
+        // Show loading indicator
+        const chartLoading = document.getElementById('chartLoading');
+        const chartInsights = document.getElementById('chartInsights');
+        
+        // Delay chart rendering to ensure DOM is fully loaded
+        setTimeout(() => {
+            try {
+                // Get data and prepare chart
+                const activityData = JSON.parse('{{ activity_data|tojson|safe }}');
+                
+                // Store for later use by filters
+                window.activityData = activityData;
+                
+                // Skip rendering if there's no meaningful data
+                if (!activityData || activityData.length === 0) {
+                    chartLoading.innerHTML = '<p class="text-center text-[var(--reddit-light-text)]">No activity data available</p>';
+                    return;
+                }
+                
+                // Get necessary DOM elements
+                const ctx = document.getElementById('activityChart').getContext('2d');
+                if (!ctx) {
+                    console.error('Could not get chart context');
+                    return;
+                }
+                
+                // Determine if we're in dark mode
+                const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
+                const textColor = isDarkMode ? '#D7DADC' : '#1A1A1B';
+                const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)';
+                
+                // Calculate average and prepare line data (simplified calculation)
+                let totalActivity = 0;
+                for (let i = 0; i < activityData.length; i++) {
+                    totalActivity += activityData[i].count;
+                }
+                const avgActivity = activityData.length > 0 ? totalActivity / activityData.length : 0;
+                
+                // Create simpler chart configuration
+                const config = {
+                    type: 'bar',
+                    data: {
+                        labels: activityData.map(d => `${d.hour}:00`),
+                        datasets: [
+                            {
+                                label: 'Activity',
+                                data: activityData.map(d => d.count),
+                                backgroundColor: 'rgba(255, 69, 0, 0.2)',
+                                borderColor: '#FF4500',
+                                borderWidth: 1,
+                                borderRadius: 4
+                            },
+                            {
+                                label: 'Average',
+                                data: Array(activityData.length).fill(avgActivity),
+                                type: 'line',
+                                fill: false,
+                                borderColor: 'rgba(75, 192, 192, 0.7)',
+                                borderDash: [5, 5],
+                                borderWidth: 2,
+                                pointRadius: 0
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                labels: { color: textColor }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const value = context.raw;
+                                        if (context.datasetIndex === 0) {
+                                            return `Activities: ${value}`;
+                                        } else {
+                                            return `Average: ${value.toFixed(1)}`;
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: { color: gridColor },
+                                ticks: { color: textColor }
+                            },
+                            x: {
+                                grid: { display: false },
+                                ticks: { color: textColor }
+                            }
+                        }
+                    }
+                };
+                
+                // Create and store chart instance
+                window.activityChart = new Chart(ctx, config);
+                
+                // Hide loading indicator
+                chartLoading.style.display = 'none';
+                
+                // Generate insights
+                generateChartInsights(activityData, avgActivity);
+                
+            } catch (error) {
+                // Handle errors gracefully
+                console.error('Error rendering chart:', error);
+                chartLoading.innerHTML = '<p class="text-center text-red-500">Error loading chart. Please try refreshing the page.</p>';
+            }
+        }, 300); // Short delay to ensure DOM is ready
+    }
+    
+    // Function to generate insights
+    function generateChartInsights(activityData, avgActivity) {
+        try {
+            // Simple insights without complex calculations
+            const chartInsights = document.getElementById('chartInsights');
+            
+            // Find peak hour (simplified)
+            let peakHour = activityData[0];
+            let lowHour = activityData[0];
+            
+            for (let i = 1; i < activityData.length; i++) {
+                if (activityData[i].count > peakHour.count) {
+                    peakHour = activityData[i];
+                }
+                if (activityData[i].count < lowHour.count) {
+                    lowHour = activityData[i];
+                }
+            }
+            
+            // Find peak hours (above average)
+            const peakHours = [];
+            for (let i = 0; i < activityData.length; i++) {
+                if (activityData[i].count > avgActivity) {
+                    peakHours.push(`${activityData[i].hour}:00`);
+                }
+            }
+            
+            // Generate HTML
+            chartInsights.innerHTML = `
+                <h3 class="font-bold text-lg mb-2">Activity Insights</h3>
+                <ul class="space-y-2">
+                    <li><span class="font-medium">Peak activity:</span> ${peakHour.hour}:00 UTC with ${peakHour.count} activities</li>
+                    <li><span class="font-medium">Least active:</span> ${lowHour.hour}:00 UTC with ${lowHour.count} activities</li>
+                    <li><span class="font-medium">Best posting time:</span> ${peakHour.hour}:00 UTC for maximum engagement</li>
+                </ul>
+            `;
+            
+            // Add peak hours only if there are some
+            if (peakHours.length > 0) {
+                // Limit to 8 hours to prevent overflow
+                const displayedPeakHours = peakHours.length > 8 
+                    ? peakHours.slice(0, 8).join(', ') + '...' 
+                    : peakHours.join(', ');
+                    
+                const peakHoursHtml = `
+                    <li><span class="font-medium">Active hours:</span> ${displayedPeakHours} (above average)</li>
+                `;
+                
+                // Insert after the second list item
+                const listItems = chartInsights.querySelectorAll('li');
+                if (listItems.length >= 2) {
+                    listItems[1].insertAdjacentHTML('afterend', peakHoursHtml);
+                }
+            }
+            
+        } catch (error) {
+            console.error('Error generating insights:', error);
+        }
+    }
     </script>
 </body>
 </html>

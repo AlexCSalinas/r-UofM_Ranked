@@ -2,30 +2,69 @@ name: Daily Reddit Data Collection
 
 on:
   schedule:
-    - cron: '0 5 * * *'  # Runs at 5 AM UTC daily (midnight EST)
-  workflow_dispatch:      # Allows manual trigger
+    # Runs at 02:00 UTC every day
+    - cron: '0 2 * * *'
+  workflow_dispatch:  # Allows manual triggering for testing
+  push:
+    paths:
+      - 'scripts/collect_data.py'  # Run when the collection script is updated
 
 jobs:
   collect-data:
     runs-on: ubuntu-latest
+    timeout-minutes: 15  # Prevent hung jobs
     
-    env:
-      REDDIT_CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
-      REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
-      MONGODB_URI: ${{ secrets.MONGODB_URI }}
-
     steps:
-      - uses: actions/checkout@v3
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0  # Fetch all history for proper git operations
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+        cache: 'pip'  # Cache pip dependencies
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
       
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.x'
-          
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install praw pymongo python-dotenv
-
-      - name: Run data collection
-        run: python scripts/collect_data.py
+    - name: Run data collection script
+      env:
+        REDDIT_CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
+        REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
+        MONGODB_URI: ${{ secrets.MONGODB_URI }}
+      run: |
+        cd scripts
+        python collect_data.py
+      
+    - name: Generate run timestamp
+      id: timestamp
+      run: echo "::set-output name=timestamp::$(date '+%Y-%m-%d %H:%M:%S UTC')"
+      
+    - name: Commit and push if data changed
+      run: |
+        git config --global user.name 'GitHub Actions Bot'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+        git add -A
+        # Only commit if there are changes
+        if git diff --staged --quiet; then
+          echo "No changes to commit"
+        else
+          git commit -m "📊 Auto-update data: ${{ steps.timestamp.outputs.timestamp }}"
+          git push
+        fi
+      
+    - name: Create status file for monitoring
+      if: always()  # Run even if previous steps fail
+      run: |
+        mkdir -p .github/status
+        echo "Last run: ${{ steps.timestamp.outputs.timestamp }}" > .github/status/last_collection.txt
+        echo "Status: ${{ job.status }}" >> .github/status/last_collection.txt
+        git config --global user.name 'GitHub Actions Bot'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+        git add .github/status/last_collection.txt
+        git commit -m "Update collection status" || echo "No status changes to commit"
+        git push || echo "Could not push status update"

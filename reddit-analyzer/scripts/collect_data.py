@@ -127,13 +127,70 @@ def get_top_contributors(subreddit_name, limit=3, timeframe='week'):
         print(f"Error in get_top_contributors: {e}")
         return {}
 
+# Add this to your store_data() function in collect_data.py
+
 def store_data():
     subreddit = 'uofm'
     collection_date = datetime.utcnow()
     
     # Get data
-    contributors = get_top_contributors(subreddit)
+    contributors = get_top_contributors(subreddit, limit=20)  # Increased to track more users
     activity_data = get_activity_times(subreddit)
+    
+    # Get previous day's data to calculate position changes
+    previous_data = db.daily_stats.find_one(
+        {'subreddit': subreddit},
+        sort=[('date', -1)]
+    )
+    
+    # Track position changes
+    if previous_data and 'contributors' in previous_data:
+        # Create sorted list of previous contributors
+        prev_contributors = sorted(
+            previous_data['contributors'].items(),
+            key=lambda x: x[1]['total_activity'],
+            reverse=True
+        )
+        
+        # Create a map of username -> previous rank
+        prev_ranks = {username: idx + 1 for idx, (username, _) in enumerate(prev_contributors)}
+        
+        # Update current contributors with position change and streak data
+        current_sorted = sorted(
+            contributors.items(),
+            key=lambda x: x[1]['total_activity'],
+            reverse=True
+        )
+        
+        for idx, (username, stats) in enumerate(current_sorted):
+            current_rank = idx + 1
+            prev_rank = prev_ranks.get(username, 0)  # 0 indicates new user
+            
+            # Add rank tracking
+            contributors[username]['current_rank'] = current_rank
+            contributors[username]['previous_rank'] = prev_rank
+            
+            # Calculate position change
+            if prev_rank == 0:
+                contributors[username]['position_change'] = 'new'
+            else:
+                contributors[username]['position_change'] = prev_rank - current_rank
+            
+            # Add streak information - number of consecutive days user has appeared
+            user_streak = 1  # Default to 1 for today
+            if username in prev_ranks:
+                # Check if user had a streak recorded previously
+                if 'streak' in previous_data['contributors'].get(username, {}):
+                    user_streak = previous_data['contributors'][username]['streak'] + 1
+            
+            contributors[username]['streak'] = user_streak
+    else:
+        # First data collection, set defaults
+        for username, stats in contributors.items():
+            contributors[username]['current_rank'] = list(contributors.keys()).index(username) + 1
+            contributors[username]['previous_rank'] = 0
+            contributors[username]['position_change'] = 'new'
+            contributors[username]['streak'] = 1
     
     # Store in MongoDB
     analytics_data = {
