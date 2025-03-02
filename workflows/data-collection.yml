@@ -37,6 +37,7 @@ jobs:
         REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
         MONGODB_URI: ${{ secrets.MONGODB_URI }}
       run: |
+        cd reddit-analyzer
         cd scripts
         python collect_data.py
       
