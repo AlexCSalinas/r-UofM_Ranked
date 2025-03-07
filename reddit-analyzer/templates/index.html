@@ -8,34 +8,45 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.1.0/dist/chartjs-plugin-annotation.min.js"></script>
     <style>
-        /* Reddit custom styles */
+        /* Custom variables - Supabase inspired with subdued Reddit colors */
         :root {
-            --reddit-orange: #FF4500;
-            --reddit-background: #DAE0E6;
+            --reddit-orange: #FF9666; /* Lighter orange */
+            --reddit-orange-subtle: rgba(255, 150, 102, 0.15);
+            --reddit-orange-hover: rgba(255, 150, 102, 0.25);
+            --reddit-background: #f8f9fa;
             --reddit-card: #FFFFFF;
             --reddit-text: #1A1A1B;
-            --reddit-light-text: #7C7C7C;
-            --reddit-border: #ccc;
+            --reddit-light-text: #6e6e6e;
+            --reddit-border: #e1e4e8;
+            --supabase-button: #FF9666;
             --reddit-hover-border: #898989;
             --chart-grid: rgba(0, 0, 0, 0.06);
             --tooltip-bg: rgba(26, 26, 27, 0.9);
+            --table-hover: rgba(255, 150, 102, 0.03);
+            --table-header: #f1f3f5;
         }
         
-        /* Dark mode variables */
+        /* Dark mode variables - Supabase inspired */
         [data-theme="dark"] {
-            --reddit-orange: #FF4500;
-            --reddit-background: #1A1A1B;
-            --reddit-card: #272729;
-            --reddit-text: #D7DADC;
-            --reddit-light-text: #818384;
-            --reddit-border: #343536;
-            --reddit-hover-border: #818384;
+            --reddit-orange: #FF9666; /* Lighter orange */
+            --reddit-orange-subtle: rgba(255, 150, 102, 0.2);
+            --reddit-orange-hover: rgba(255, 150, 102, 0.3);
+            --reddit-background: #1a1a1a;
+            --reddit-card: #1f1f1f;
+            --reddit-text: #f1f1f1;
+            --reddit-light-text: #ababab;
+            --reddit-border: #2c2c2c;
+            --supabase-button: #FF9666;
+            --reddit-hover-border: #4d4d4d;
             --chart-grid: rgba(255, 255, 255, 0.06);
             --tooltip-bg: rgba(50, 50, 50, 0.9);
+            --table-hover: rgba(255, 150, 102, 0.1);
+            --table-header: #252525;
         }
         
+        /* Base styles */
         body {
-            font-family: Verdana, Arial, Helvetica, sans-serif;
+            font-family: Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
             background-color: var(--reddit-background);
             color: var(--reddit-text);
             overflow-x: hidden;
@@ -44,6 +55,7 @@
         .reddit-link {
             color: var(--reddit-orange);
             text-decoration: none;
+            font-weight: 500;
         }
         
         .reddit-link:hover {
@@ -53,19 +65,21 @@
         .reddit-card {
             background-color: var(--reddit-card);
             border: 1px solid var(--reddit-border);
-            border-radius: 4px;
+            border-radius: 6px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
             transition: all 0.2s ease;
         }
         
         .reddit-card:hover {
-            border-color: var(--reddit-hover-border);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
         
         h1, h2, h3, h4, h5, h6 {
             color: var(--reddit-text);
+            font-weight: 600;
         }
         
-        /* Toggle switch styling */
+        /* Toggle switch styling - Modernized */
         .theme-switch-wrapper {
             display: flex;
             align-items: center;
@@ -79,7 +93,7 @@
             display: inline-block;
             height: 24px;
             position: relative;
-            width: 50px;
+            width: 44px;
         }
         
         .theme-switch input {
@@ -87,14 +101,14 @@
         }
         
         .slider {
-            background-color: #ccc;
+            background-color: #e1e4e8;
             bottom: 0;
             cursor: pointer;
             left: 0;
             position: absolute;
             right: 0;
             top: 0;
-            transition: .4s;
+            transition: .3s;
             border-radius: 34px;
         }
         
@@ -105,9 +119,10 @@
             height: 16px;
             left: 4px;
             position: absolute;
-            transition: .4s;
+            transition: .3s;
             width: 16px;
             border-radius: 50%;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
         }
         
         input:checked + .slider {
@@ -115,12 +130,138 @@
         }
         
         input:checked + .slider:before {
-            transform: translateX(26px);
+            transform: translateX(20px);
         }
         
-        .theme-icon {
-            margin: 0 10px;
+        /* Supabase-inspired tables */
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 0.925rem;
+        }
+        
+        table th {
+            background-color: var(--table-header);
+            font-weight: 500;
+            text-align: left;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--reddit-border);
             color: var(--reddit-text);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        table td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--reddit-border);
+            color: var(--reddit-text);
+        }
+        
+        table tr:hover td {
+            background-color: var(--table-hover);
+        }
+        
+        /* Supabase-inspired buttons */
+        .supabase-button {
+            background-color: var(--reddit-orange-subtle);
+            color: var(--reddit-orange);
+            border: 1px solid transparent;
+            border-radius: 4px;
+            padding: 0.5rem 1rem;
+            font-weight: 500;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .supabase-button:hover {
+            background-color: var(--reddit-orange-hover);
+        }
+        
+        .supabase-button-primary {
+            background-color: var(--supabase-button);
+            color: white;
+        }
+        
+        .supabase-button-primary:hover {
+            background-color: #e58559;
+        }
+        
+        .supabase-button-outline {
+            background-color: transparent;
+            border: 1px solid var(--reddit-border);
+            color: var(--reddit-text);
+        }
+        
+        .supabase-button-outline:hover {
+            background-color: rgba(0,0,0,0.03);
+            border-color: var(--reddit-hover-border);
+        }
+        
+        /* Modern form elements */
+        select, input {
+            background-color: var(--reddit-card);
+            border: 1px solid var(--reddit-border);
+            border-radius: 4px;
+            padding: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--reddit-text);
+            transition: border-color 0.15s ease-in-out;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 0.5rem center;
+            background-size: 1em;
+            padding-right: 2rem;
+        }
+        
+        select:focus, input:focus {
+            outline: none;
+            border-color: var(--reddit-orange);
+            box-shadow: 0 0 0 2px var(--reddit-orange-subtle);
+        }
+        
+        /* Badge styling */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.125rem 0.5rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            line-height: 1.5;
+        }
+        
+        .badge-green {
+            background-color: rgba(46, 160, 67, 0.1);
+            color: #2ea043;
+        }
+        
+        .badge-orange {
+            background-color: var(--reddit-orange-subtle);
+            color: var(--reddit-orange);
+        }
+        
+        .badge-purple {
+            background-color: rgba(111, 66, 193, 0.1);
+            color: #6f42c1;
+        }
+        
+        .badge-blue {
+            background-color: rgba(26, 115, 232, 0.1);
+            color: #1a73e8;
+        }
+        
+        /* Modern navigation */
+        .nav-header {
+            backdrop-filter: blur(8px);
+            background-color: rgba(var(--reddit-card-rgb), 0.8);
+            border-bottom: 1px solid var(--reddit-border);
         }
         
         /* Responsive tables */
@@ -168,7 +309,7 @@
             scroll-behavior: smooth;
         }
         
-        /* Loading animation */
+        /* Loading animation - Simplified */
         .loading-overlay {
             position: fixed;
             top: 0;
@@ -183,12 +324,12 @@
         }
         
         .loading-spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid var(--reddit-orange);
+            width: 36px;
+            height: 36px;
+            border: 3px solid var(--reddit-orange);
             border-bottom-color: transparent;
             border-radius: 50%;
-            animation: spin 1s linear infinite;
+            animation: spin 0.8s linear infinite;
         }
         
         @keyframes spin {
@@ -196,34 +337,26 @@
             100% { transform: rotate(360deg); }
         }
         
-        /* Print styles */
-        @media print {
-            body {
-                background-color: white !important;
-                color: black !important;
-            }
-            .reddit-card {
-                break-inside: avoid;
-                background-color: white !important;
-                border: 1px solid #ddd !important;
-                box-shadow: none !important;
-                margin-bottom: 2rem !important;
-            }
-            .theme-switch-wrapper, 
-            button, 
-            select,
-            .filters-card {
-                display: none !important;
-            }
-            h1, h2, h3 {
-                color: black !important;
-            }
-            canvas {
-                max-height: 300px !important;
-            }
-            .nav-header {
-                display: none !important;
-            }
+        /* Dark mode nav header */
+        [data-theme="dark"] .nav-header {
+            background-color: rgba(31, 31, 31, 0.8);
+        }
+        
+        /* Supabase-inspired design elements */
+        .supabase-card {
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.2s;
+        }
+        
+        .supabase-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        /* Updated activity card styling */
+        .activity-card {
+            border-radius: 8px;
+            overflow: hidden;
         }
     </style>
 </head>
@@ -234,19 +367,19 @@
     </div>
 
     <!-- Navigation header -->
-    <nav class="bg-[var(--reddit-card)] shadow-md sticky top-0 z-50 nav-header">
-        <div class="container mx-auto px-4 py-2">
+    <nav class="bg-[var(--reddit-card)] shadow-sm sticky top-0 z-50 nav-header">
+        <div class="container mx-auto px-4 py-3">
             <div class="flex justify-between items-center">
                 <!-- Left side - Logo and title -->
                 <div class="flex items-center">
                     <div class="text-[var(--reddit-orange)] mr-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-8 h-8">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-7 h-7">
                             <path d="M10 0C4.478 0 0 4.478 0 10c0 5.523 4.478 10 10 10 5.523 0 10-4.477 10-10 0-5.522-4.477-10-10-10z"/>
                             <path fill="white" d="M16.671 10c0-.875-.704-1.583-1.569-1.583-.438 0-.828.171-1.103.444-1.086-.737-2.584-1.208-4.253-1.266l.85-3.003 2.442.533c.031.658.56 1.175 1.225 1.175.68 0 1.237-.546 1.237-1.228 0-.683-.557-1.229-1.237-1.229-.48 0-.903.275-1.096.686l-2.737-.598a.329.329 0 00-.391.219l-1.022 3.616c-1.719.026-3.218.497-4.333 1.234a1.581 1.581 0 00-1.117-.444c-.865 0-1.569.708-1.569 1.583 0 .657.387 1.212.943 1.462a3.083 3.083 0 00-.027.448c0 2.291 2.665 4.145 5.952 4.145 3.288 0 5.954-1.854 5.954-4.145 0-.152-.01-.302-.026-.448.556-.25.942-.805.942-1.462z"/>
                         </svg>
                     </div>
                     <div>
-                        <h1 class="text-lg font-bold text-[var(--reddit-text)]">r/{{ subreddit }} Analytics</h1>
+                        <h1 class="text-lg font-semibold text-[var(--reddit-text)]">r/{{ subreddit }} Analytics</h1>
                     </div>
                 </div>
                 
@@ -260,11 +393,11 @@
                 </div>
                 
                 <!-- Desktop navigation links -->
-                <div class="hidden md:flex space-x-4">
-                    <a href="#contributors" class="px-3 py-2 rounded-md text-sm font-medium text-[var(--reddit-text)] hover:bg-gray-100">Contributors</a>
-                    <a href="#rising-stars" class="px-3 py-2 rounded-md text-sm font-medium text-[var(--reddit-text)] hover:bg-gray-100">Rising Stars</a>
-                    <a href="#activity" class="px-3 py-2 rounded-md text-sm font-medium text-[var(--reddit-text)] hover:bg-gray-100">Activity</a>
-                    <span class="text-[var(--reddit-light-text)] self-center">|</span>
+                <div class="hidden md:flex space-x-4 items-center">
+                    <a href="#contributors" class="px-3 py-2 rounded-md text-sm font-medium text-[var(--reddit-text)] hover:text-[var(--reddit-orange)] transition-colors">Contributors</a>
+                    <a href="#rising-stars" class="px-3 py-2 rounded-md text-sm font-medium text-[var(--reddit-text)] hover:text-[var(--reddit-orange)] transition-colors">Rising Stars</a>
+                    <a href="#activity" class="px-3 py-2 rounded-md text-sm font-medium text-[var(--reddit-text)] hover:text-[var(--reddit-orange)] transition-colors">Activity</a>
+                    <span class="text-[var(--reddit-light-text)] self-center mx-2">|</span>
                     <span class="text-sm self-center text-[var(--reddit-light-text)]">Last updated: {{ last_updated }}</span>
                 </div>
             </div>
@@ -273,9 +406,9 @@
         <!-- Mobile menu (hidden by default) -->
         <div id="mobileMenu" class="hidden md:hidden bg-[var(--reddit-card)] pb-2 shadow-inner">
             <div class="px-2 pt-2 pb-3 space-y-1">
-                <a href="#contributors" class="block px-3 py-2 rounded-md text-base font-medium text-[var(--reddit-text)] hover:bg-gray-100">Contributors</a>
-                <a href="#rising-stars" class="block px-3 py-2 rounded-md text-base font-medium text-[var(--reddit-text)] hover:bg-gray-100">Rising Stars</a>
-                <a href="#activity" class="block px-3 py-2 rounded-md text-base font-medium text-[var(--reddit-text)] hover:bg-gray-100">Activity</a>
+                <a href="#contributors" class="block px-3 py-2 rounded-md text-base font-medium text-[var(--reddit-text)] hover:bg-[var(--reddit-orange-subtle)]">Contributors</a>
+                <a href="#rising-stars" class="block px-3 py-2 rounded-md text-base font-medium text-[var(--reddit-text)] hover:bg-[var(--reddit-orange-subtle)]">Rising Stars</a>
+                <a href="#activity" class="block px-3 py-2 rounded-md text-base font-medium text-[var(--reddit-text)] hover:bg-[var(--reddit-orange-subtle)]">Activity</a>
                 <div class="px-3 py-2 text-sm text-[var(--reddit-light-text)]">
                     Last updated: {{ last_updated }}
                 </div>
@@ -304,25 +437,28 @@
             {% endif %}
         </div>
 
-        <!-- Data filters card -->
+        <!-- Data filters card - UPDATED -->
         <div class="reddit-card p-4 mb-8 filters-card">
-            <div class="flex flex-col md:flex-row justify-between items-center mb-4">
-                <h3 class="text-xl font-bold mb-2 md:mb-0 text-[var(--reddit-text)]">Data Filters</h3>
-                <div class="flex flex-wrap gap-2">
-                    <button id="toggleCompactView" class="px-3 py-1.5 bg-gray-200 hover:bg-gray-300 rounded text-sm font-medium transition-colors">
-                        <span id="viewModeText">Enable Compact View</span>
+            <div class="flex flex-col sm:flex-row justify-between items-center mb-2">
+                <h3 class="text-base font-semibold mb-3 sm:mb-0 text-[var(--reddit-text)] flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-[var(--reddit-orange)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                    </svg>
+                    Filters
+                    <button id="toggleFilters" class="ml-2 text-xs text-[var(--reddit-light-text)] hover:text-[var(--reddit-orange)] transition-colors">
+                        <span id="filterToggleText">Hide</span>
                     </button>
-                    <button id="printReport" class="px-3 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded text-sm font-medium transition-colors">
-                        Print Report
-                    </button>
-                </div>
+                </h3>
+                <button id="resetFilters" class="supabase-button !py-1.5 !px-3 text-xs">
+                    Reset
+                </button>
             </div>
             
-            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div id="filtersContainer" class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-2">
                 <!-- User Type Filter -->
                 <div>
-                    <label class="block text-[var(--reddit-light-text)] text-sm font-medium mb-2">User Type</label>
-                    <select id="userTypeFilter" class="w-full p-2 border border-gray-300 rounded bg-[var(--reddit-card)] text-[var(--reddit-text)]">
+                    <label class="block text-[var(--reddit-light-text)] text-xs font-medium mb-1">User Type</label>
+                    <select id="userTypeFilter" class="w-full py-1.5">
                         <option value="all">All Users</option>
                         <option value="new">New Users Only</option>
                         <option value="rising">Rising Users Only</option>
@@ -330,91 +466,74 @@
                     </select>
                 </div>
                 
-                <!-- Sort Order -->
-                <div>
-                    <label class="block text-[var(--reddit-light-text)] text-sm font-medium mb-2">Sort By</label>
-                    <select id="sortOrderFilter" class="w-full p-2 border border-gray-300 rounded bg-[var(--reddit-card)] text-[var(--reddit-text)]">
-                        <option value="rank">Rank (Default)</option>
-                        <option value="posts">Most Posts</option>
-                        <option value="comments">Most Comments</option>
-                        <option value="trend-up">Biggest Improvement</option>
-                        <option value="trend-down">Biggest Drop</option>
-                    </select>
-                </div>
-                
                 <!-- Activity Time Range -->
                 <div>
-                    <label class="block text-[var(--reddit-light-text)] text-sm font-medium mb-2">Activity Hours</label>
-                    <div class="flex items-center space-x-2">
-                        <select id="timeRangeFilter" class="flex-1 p-2 border border-gray-300 rounded bg-[var(--reddit-card)] text-[var(--reddit-text)]">
-                            <option value="all">All Hours</option>
-                            <option value="peak">Peak Hours Only</option>
-                            <option value="morning">Morning (6-12)</option>
-                            <option value="afternoon">Afternoon (12-18)</option>
-                            <option value="evening">Evening (18-24)</option>
-                            <option value="night">Night (0-6)</option>
-                        </select>
-                        <button id="resetFilters" class="p-2 bg-gray-200 hover:bg-gray-300 rounded text-xs font-medium transition-colors">
-                            Reset
-                        </button>
-                    </div>
+                    <label class="block text-[var(--reddit-light-text)] text-xs font-medium mb-1">Chart Hours</label>
+                    <select id="timeRangeFilter" class="w-full py-1.5">
+                        <option value="all">All Hours</option>
+                        <option value="peak">Peak Hours Only</option>
+                        <option value="morning">Morning (6-12)</option>
+                        <option value="afternoon">Afternoon (12-18)</option>
+                        <option value="evening">Evening (18-24)</option>
+                        <option value="night">Night (0-6)</option>
+                    </select>
                 </div>
             </div>
         </div>
 
         <!-- Top Contributors section -->
-        <div class="mt-8" id="contributors">
-            <h2 class="text-2xl font-bold mb-4 text-center text-[var(--reddit-text)]">Top 10 Contributors Leaderboard</h2>
-            <div class="reddit-card p-4">
+        <div class="mt-10" id="contributors">
+            <h2 class="text-xl font-bold mb-4 text-[var(--reddit-text)]">Top 10 Contributors Leaderboard</h2>
+            <div class="reddit-card overflow-hidden supabase-card">
                 <div class="overflow-x-auto">
-                    <table class="w-full">
-                        <thead class="bg-gray-100">
+                    <table>
+                        <thead>
                             <tr>
-                                <th class="p-2 text-left">Rank</th>
-                                <th class="p-2 text-left">User</th>
-                                <th class="p-2 text-center">Posts</th>
-                                <th class="p-2 text-center">Comments</th>
-                                <th class="p-2 text-center">Activity</th>
-                                <th class="p-2 text-center">Trend</th>
+                                <th class="w-14">Rank</th>
+                                <th>User</th>
+                                <th class="text-center w-16">Posts</th>
+                                <th class="text-center w-24">Comments</th>
+                                <th class="text-center w-20">Activity</th>
+                                <th class="text-center w-24">Trend</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for username, stats in contributors.items() %}
                             {% if loop.index <= 10 %}
-                            <tr class="border-b hover:bg-gray-50 transition-colors">
-                                <td class="p-2 font-bold">{{ stats.current_rank }}</td>
-                                <td class="p-2">
+                            <tr>
+                                <td class="font-semibold">{{ stats.current_rank }}</td>
+                                <td>
                                     <div class="flex items-center">
                                         <a href="https://reddit.com/u/{{ username }}" target="_blank" class="reddit-link">
                                             u/{{ username }}
                                         </a>
                                         {% if stats.position_change == 'new' %}
-                                        <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">New!</span>
+                                        <span class="ml-2 badge badge-green">New!</span>
                                         {% endif %}
                                     </div>
                                 </td>
-                                <td class="p-2 text-center">{{ stats.post_count }}</td>
-                                <td class="p-2 text-center">{{ stats.comment_count }}</td>
-                                <td class="p-2 text-center font-medium">{{ stats.total_activity }}</td>
-                                <td class="p-2 text-center">
+                                <td class="text-center">{{ stats.post_count }}</td>
+                                <td class="text-center">{{ stats.comment_count }}</td>
+                                <td class="text-center font-medium">{{ stats.total_activity }}</td>
+                                <td class="text-center">
                                     {% if stats.position_change == 'new' %}
-                                        <span class="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded">New</span>
+                                        <span class="badge badge-blue">New</span>
                                     {% elif stats.position_change > 0 %}
-                                        <span class="text-green-600 font-bold flex items-center justify-center">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                        <span class="text-green-600 font-semibold flex items-center justify-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-0.5" viewBox="0 0 20 20" fill="currentColor">
                                                 <path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd" />
                                             </svg>
                                             {{ stats.position_change }}
                                         </span>
                                     {% elif stats.position_change < 0 %}
-                                        <span class="text-red-600 font-bold flex items-center justify-center">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                        <span class="text-red-600 font-semibold flex items-center justify-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-0.5" viewBox="0 0 20 20" fill="currentColor">
                                                 <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
                                             </svg>
                                             {{ stats.position_change|abs }}
                                         </span>
                                     {% else %}
-                                        <span class="text-gray-600">-</span>
+                                        <span class="text-gray-500">-</span>
                                     {% endif %}
                                 </td>
                             </tr>
@@ -428,55 +547,55 @@
 
         <!-- Rising Stars Section -->
         {% if rising_stars %}
-        <div class="mt-8" id="rising-stars">
-            <h2 class="text-2xl font-bold mb-4 text-center text-[var(--reddit-text)]">Rising Stars</h2>
+        <div class="mt-10" id="rising-stars">
+            <h2 class="text-xl font-bold mb-4 text-[var(--reddit-text)]">Rising Stars</h2>
             <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {% for star in rising_stars %}
-                <div class="reddit-card p-4 relative overflow-hidden">
-                    <!-- Stylish badge in top right corner -->
+                <div class="reddit-card relative overflow-hidden border-[var(--reddit-border)] supabase-card">
+                    <!-- Star badge in corner -->
                     <div class="absolute top-0 right-0">
-                        <div class="w-16 h-16 text-center rotate-45 bg-yellow-500 text-white font-bold transform translate-x-6 -translate-y-2">
+                        <div class="w-16 h-16 text-center rotate-45 bg-[var(--reddit-orange)] text-white transform translate-x-8 -translate-y-1">
                             <div class="mt-10 -rotate-45">⭐</div>
                         </div>
                     </div>
                     
-                    <div class="flex flex-col h-full">
-                        <div class="mb-2">
-                            <a href="https://reddit.com/u/{{ star.username }}" target="_blank" class="reddit-link text-lg font-semibold">
+                    <div class="p-5">
+                        <div class="mb-3">
+                            <a href="https://reddit.com/u/{{ star.username }}" target="_blank" class="reddit-link text-lg">
                                 u/{{ star.username }}
                             </a>
                             <div class="text-sm text-[var(--reddit-light-text)] mt-1">Rank #{{ star.stats.current_rank }}</div>
                         </div>
                         
-                        <div class="bg-yellow-50 rounded-lg p-3 mb-3">
-                            <div class="text-yellow-800 font-medium">{{ star.reason }}</div>
+                        <div class="bg-[var(--reddit-orange-subtle)] rounded-md p-3 mb-4">
+                            <div class="text-[var(--reddit-orange)] font-medium">{{ star.reason }}</div>
                         </div>
                         
-                        <div class="space-y-2 mt-auto">
-                            <div class="flex justify-between">
-                                <span class="text-[var(--reddit-light-text)]">Posts:</span>
+                        <div class="space-y-2">
+                            <div class="flex justify-between items-center py-1">
+                                <span class="text-[var(--reddit-light-text)]">Posts</span>
                                 <span class="font-medium">{{ star.stats.post_count }}</span>
                             </div>
-                            <div class="flex justify-between">
-                                <span class="text-[var(--reddit-light-text)]">Comments:</span>
+                            <div class="flex justify-between items-center py-1">
+                                <span class="text-[var(--reddit-light-text)]">Comments</span>
                                 <span class="font-medium">{{ star.stats.comment_count }}</span>
                             </div>
-                            <div class="flex justify-between">
-                                <span class="text-[var(--reddit-light-text)]">Activity:</span>
+                            <div class="flex justify-between items-center py-1">
+                                <span class="text-[var(--reddit-light-text)]">Activity</span>
                                 <span class="font-medium">{{ star.stats.total_activity }}</span>
                             </div>
                             {% if star.stats.streak %}
-                            <div class="flex justify-between">
-                                <span class="text-[var(--reddit-light-text)]">Streak:</span>
+                            <div class="flex justify-between items-center py-1">
+                                <span class="text-[var(--reddit-light-text)]">Streak</span>
                                 <span class="font-medium">{{ star.stats.streak }} days</span>
                             </div>
                             {% endif %}
                         </div>
                         
                         {% if star.stats.position_change != 'new' and star.stats.position_change > 0 %}
-                        <div class="mt-3 pt-3 border-t border-[#EDEFF1] text-center">
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                        <div class="mt-4 pt-3 border-t border-[var(--reddit-border)] text-center">
+                            <span class="badge badge-green">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mr-1" viewBox="0 0 20 20" fill="currentColor">
                                     <path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd" />
                                 </svg>
                                 Up {{ star.stats.position_change }} ranks
@@ -491,22 +610,22 @@
         {% endif %}
 
         <!-- Activity Chart Section -->
-        <div class="mt-8" id="activity">
-            <h2 class="text-2xl font-bold mb-4 text-center text-[var(--reddit-text)]">Community Activity Times</h2>
-            <div class="reddit-card p-4">
-                <!-- Loading indicator that will be hidden when chart is ready -->
+        <div class="mt-10" id="activity">
+            <h2 class="text-xl font-bold mb-4 text-[var(--reddit-text)]">Community Activity Times</h2>
+            <div class="reddit-card p-5 activity-card supabase-card">
+                <!-- Loading indicator -->
                 <div id="chartLoading" class="flex justify-center items-center py-8">
-                    <div class="w-12 h-12 border-4 border-[var(--reddit-orange)] border-t-transparent rounded-full animate-spin"></div>
+                    <div class="w-8 h-8 border-3 border-[var(--reddit-orange)] border-t-transparent rounded-full animate-spin"></div>
                     <span class="ml-3 text-[var(--reddit-text)]">Loading chart...</span>
                 </div>
                 
-                <!-- Chart container with controlled height -->
+                <!-- Chart container -->
                 <div style="height: 300px; position: relative;">
                     <canvas id="activityChart" class="w-full h-full"></canvas>
                 </div>
                 
-                <!-- Insights section that will be populated by JavaScript -->
-                <div id="chartInsights" class="mt-4 pt-4 border-t border-[var(--reddit-border)] text-[var(--reddit-text)]"></div>
+                <!-- Insights section -->
+                <div id="chartInsights" class="mt-5 pt-4 border-t border-[var(--reddit-border)] text-[var(--reddit-text)]"></div>
             </div>
         </div>
     </div>
@@ -527,8 +646,8 @@
         initBackToTop();
         initThemeToggle();
         initFilters();
+        initFilterToggle(); // Added new function to handle filter toggle
         initChart();
-        setTimeout(createUserSparklines, 500);
         
         // Hide the loading overlay when everything is ready
         window.addEventListener('load', function() {
@@ -582,6 +701,25 @@
         });
     }
     
+    // Filter toggle functionality
+    function initFilterToggle() {
+        const toggleButton = document.getElementById('toggleFilters');
+        const filtersContainer = document.getElementById('filtersContainer');
+        const toggleText = document.getElementById('filterToggleText');
+        
+        if (toggleButton && filtersContainer) {
+            toggleButton.addEventListener('click', function() {
+                if (filtersContainer.style.display === 'none') {
+                    filtersContainer.style.display = 'grid';
+                    toggleText.textContent = 'Hide';
+                } else {
+                    filtersContainer.style.display = 'none';
+                    toggleText.textContent = 'Show';
+                }
+            });
+        }
+    }
+    
     // Back to top button
     function initBackToTop() {
         const backToTopBtn = document.getElementById('backToTopBtn');
@@ -609,7 +747,7 @@
         const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
         
         // Check for saved theme preference
-        const currentTheme = localStorage.getItem('theme') || 'light';
+        const currentTheme = localStorage.getItem('theme') || 'dark';
         document.documentElement.setAttribute('data-theme', currentTheme);
         
         // Set checkbox based on current theme
@@ -642,6 +780,9 @@
                 
                 // Update tooltip style
                 window.activityChart.options.plugins.tooltip.backgroundColor = isDark ? 'rgba(70, 70, 70, 0.9)' : 'rgba(26, 26, 27, 0.9)';
+
+                // Update legend text color
+                window.activityChart.options.plugins.legend.labels.color = isDark ? '#ffffff' : '#1A1A1B';
                 
                 // Update chart
                 window.activityChart.update();
@@ -656,21 +797,16 @@
         }, 1000);
     }
     
-    // Filtering and UI enhancement functionality
+    // Filtering functionality
     function initFilters() {
         // Get filter elements
         const userTypeFilter = document.getElementById('userTypeFilter');
         const sortOrderFilter = document.getElementById('sortOrderFilter');
         const timeRangeFilter = document.getElementById('timeRangeFilter');
         const resetFiltersBtn = document.getElementById('resetFilters');
-        const toggleCompactViewBtn = document.getElementById('toggleCompactView');
-        const printReportBtn = document.getElementById('printReport');
         
         // Skip if filters aren't available
         if (!userTypeFilter || !sortOrderFilter) return;
-        
-        // Track if we're in compact view
-        let isCompactView = false;
         
         // Filter the user rows based on selected filters
         function applyFilters() {
@@ -688,7 +824,7 @@
             let filteredRows = userRows;
             if (userType === 'new') {
                 filteredRows = userRows.filter(row => {
-                    const newBadge = row.querySelector('span.bg-green-100.text-green-800');
+                    const newBadge = row.querySelector('.badge-green');
                     return newBadge !== null;
                 });
             } else if (userType === 'rising') {
@@ -703,35 +839,71 @@
             // Sort by selected criteria
             if (sortOrder === 'posts') {
                 filteredRows.sort((a, b) => {
-                    const postsA = parseInt(a.querySelector('td:nth-child(3)').textContent);
-                    const postsB = parseInt(b.querySelector('td:nth-child(3)').textContent);
-                    return postsB - postsA;
+                    try {
+                        const postsA = parseInt(a.querySelector('td:nth-child(3)').textContent.trim()) || 0;
+                        const postsB = parseInt(b.querySelector('td:nth-child(3)').textContent.trim()) || 0;
+                        return postsB - postsA;
+                    } catch (error) {
+                        console.error('Error sorting by posts:', error);
+                        return 0;
+                    }
                 });
             } else if (sortOrder === 'comments') {
                 filteredRows.sort((a, b) => {
-                    const commentsA = parseInt(a.querySelector('td:nth-child(4)').textContent);
-                    const commentsB = parseInt(b.querySelector('td:nth-child(4)').textContent);
-                    return commentsB - commentsA;
+                    try {
+                        const commentsA = parseInt(a.querySelector('td:nth-child(4)').textContent.trim()) || 0;
+                        const commentsB = parseInt(b.querySelector('td:nth-child(4)').textContent.trim()) || 0;
+                        return commentsB - commentsA;
+                    } catch (error) {
+                        console.error('Error sorting by comments:', error);
+                        return 0;
+                    }
                 });
             } else if (sortOrder === 'trend-up') {
                 filteredRows.sort((a, b) => {
-                    const trendA = a.querySelector('td:nth-child(6)');
-                    const trendB = b.querySelector('td:nth-child(6)');
-                    const valueA = trendA && trendA.textContent.includes('↑') ? 
-                        parseInt(trendA.textContent.match(/\d+/)?.[0] || 0) : -999;
-                    const valueB = trendB && trendB.textContent.includes('↑') ? 
-                        parseInt(trendB.textContent.match(/\d+/)?.[0] || 0) : -999;
-                    return valueB - valueA;
+                    try {
+                        const trendA = a.querySelector('td:nth-child(6)');
+                        const trendB = b.querySelector('td:nth-child(6)');
+                        
+                        // Extract the numeric part from trend up elements
+                        const getUpValue = (el) => {
+                            if (!el) return -999;
+                            const svgUp = el.querySelector('svg[viewBox="0 0 20 20"] path[d^="M14.707 12.707"]');
+                            const match = svgUp && el.textContent.match(/\d+/);
+                            return match ? parseInt(match[0]) : -999;
+                        };
+                        
+                        const valueA = getUpValue(trendA);
+                        const valueB = getUpValue(trendB);
+                        
+                        return valueB - valueA;
+                    } catch (error) {
+                        console.error('Error sorting by trend up:', error);
+                        return 0;
+                    }
                 });
             } else if (sortOrder === 'trend-down') {
                 filteredRows.sort((a, b) => {
-                    const trendA = a.querySelector('td:nth-child(6)');
-                    const trendB = b.querySelector('td:nth-child(6)');
-                    const valueA = trendA && trendA.textContent.includes('↓') ? 
-                        parseInt(trendA.textContent.match(/\d+/)?.[0] || 0) : -999;
-                    const valueB = trendB && trendB.textContent.includes('↓') ? 
-                        parseInt(trendB.textContent.match(/\d+/)?.[0] || 0) : -999;
-                    return valueB - valueA;
+                    try {
+                        const trendA = a.querySelector('td:nth-child(6)');
+                        const trendB = b.querySelector('td:nth-child(6)');
+                        
+                        // Extract the numeric part from trend down elements
+                        const getDownValue = (el) => {
+                            if (!el) return -999;
+                            const svgDown = el.querySelector('svg[viewBox="0 0 20 20"] path[d^="M5.293 7.293"]');
+                            const match = svgDown && el.textContent.match(/\d+/);
+                            return match ? parseInt(match[0]) : -999;
+                        };
+                        
+                        const valueA = getDownValue(trendA);
+                        const valueB = getDownValue(trendB);
+                        
+                        return valueB - valueA;
+                    } catch (error) {
+                        console.error('Error sorting by trend down:', error);
+                        return 0;
+                    }
                 });
             }
             
@@ -780,91 +952,6 @@
             }
         }
         
-        // Toggle compact view
-        function toggleCompactView() {
-            const mainContainer = document.querySelector('.container');
-            const userCards = document.querySelectorAll('.reddit-card');
-            const viewModeText = document.getElementById('viewModeText');
-            
-            isCompactView = !isCompactView;
-            
-            if (isCompactView) {
-                // Enable compact view
-                mainContainer.classList.add('max-w-full');
-                mainContainer.classList.remove('max-w-5xl');
-                userCards.forEach(card => {
-                    card.classList.add('compact-view');
-                    card.style.margin = '0.5rem 0';
-                    card.style.padding = '0.75rem';
-                });
-                viewModeText.textContent = 'Disable Compact View';
-                
-                // Adjust font sizes for compact view
-                document.querySelectorAll('h1').forEach(h => h.style.fontSize = '1.5rem');
-                document.querySelectorAll('h2').forEach(h => h.style.fontSize = '1.25rem');
-                
-                // Make the activity chart smaller
-                const chartContainer = document.getElementById('activityChart').parentNode;
-                chartContainer.style.height = '250px';
-            } else {
-                // Disable compact view
-                mainContainer.classList.remove('max-w-full');
-                mainContainer.classList.add('max-w-5xl');
-                userCards.forEach(card => {
-                    card.classList.remove('compact-view');
-                    card.style.margin = '';
-                    card.style.padding = '';
-                });
-                viewModeText.textContent = 'Enable Compact View';
-                
-                // Reset font sizes
-                document.querySelectorAll('h1').forEach(h => h.style.fontSize = '');
-                document.querySelectorAll('h2').forEach(h => h.style.fontSize = '');
-                
-                // Reset chart size
-                const chartContainer = document.getElementById('activityChart').parentNode;
-                chartContainer.style.height = '300px';
-            }
-            
-            // Update chart after resize
-            if (window.activityChart) {
-                setTimeout(() => {
-                    window.activityChart.resize();
-                }, 300);
-            }
-        }
-        
-        // Print report functionality
-        function printReport() {
-            // Create a print-friendly version
-            const originalTitle = document.title;
-            document.title = `r/${document.querySelector('h1').textContent.split(' ')[3] || '{{ subreddit }}'} Analytics Report`;
-            
-            // Hide the theme toggle and filters during print
-            const themeToggle = document.querySelector('.theme-switch-wrapper');
-            const filtersCard = document.querySelector('.filters-card');
-            const originalThemeToggleDisplay = themeToggle.style.display;
-            const originalFiltersDisplay = filtersCard.style.display;
-            
-            themeToggle.style.display = 'none';
-            filtersCard.style.display = 'none';
-            
-            // Add report date
-            const reportDateDiv = document.createElement('div');
-            reportDateDiv.className = 'print-only text-center mb-4';
-            reportDateDiv.innerHTML = `<p>Report generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</p>`;
-            document.querySelector('h1').after(reportDateDiv);
-            
-            // Print
-            window.print();
-            
-            // Restore original state
-            document.title = originalTitle;
-            themeToggle.style.display = originalThemeToggleDisplay;
-            filtersCard.style.display = originalFiltersDisplay;
-            reportDateDiv.remove();
-        }
-        
         // Register event listeners
         if (userTypeFilter) userTypeFilter.addEventListener('change', applyFilters);
         if (sortOrderFilter) sortOrderFilter.addEventListener('change', applyFilters);
@@ -877,15 +964,12 @@
                 applyFilters();
             });
         }
-        
-        if (toggleCompactViewBtn) toggleCompactViewBtn.addEventListener('click', toggleCompactView);
-        if (printReportBtn) printReportBtn.addEventListener('click', printReport);
     }
     
     // Make sections collapsible on mobile
     function makeCollapsible() {
         if (window.innerWidth <= 768) {
-            const sections = document.querySelectorAll('.mt-8');
+            const sections = document.querySelectorAll('.mt-10');
             
             sections.forEach((section, index) => {
                 // Skip if already processed
@@ -907,7 +991,7 @@
                 if (!heading) return;
                 
                 const toggleBtn = document.createElement('button');
-                toggleBtn.className = 'toggle-collapse w-full text-center mt-2 p-2 bg-[var(--reddit-background)] rounded font-bold';
+                toggleBtn.className = 'toggle-collapse supabase-button w-full text-center mt-2 p-2';
                 toggleBtn.textContent = 'Show More';
                 toggleBtn.setAttribute('aria-expanded', 'false');
                 
@@ -926,88 +1010,6 @@
                     }
                 });
             });
-        }
-    }
-    
-    // Function to fetch user data and create sparklines
-    async function createUserSparklines() {
-        const tableRows = document.querySelectorAll('tbody tr');
-        
-        for (const row of tableRows) {
-            const usernameElement = row.querySelector('td:nth-child(2) a');
-            if (!usernameElement) continue;
-            
-            const username = usernameElement.textContent.trim().substring(2); // Remove the "u/" prefix
-            
-            try {
-                const response = await fetch(`/api/user-stats/${username}`);
-                const userData = await response.json();
-                
-                if (userData.history && userData.history.length > 0) {
-                    // Create a container for the sparkline
-                    const sparklineCell = document.createElement('td');
-                    sparklineCell.className = 'p-2';
-                    
-                    // Create sparkline svg element
-                    const sparkWidth = 80;
-                    const sparkHeight = 20;
-                    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-                    svg.setAttribute('width', sparkWidth);
-                    svg.setAttribute('height', sparkHeight);
-                    svg.setAttribute('class', 'sparkline');
-                    
-                    // Get activity values for plotting
-                    const activityValues = userData.history.map(day => day.activity).reverse();
-                    const maxActivity = Math.max(...activityValues, 1);
-                    
-                    // Create polyline for sparkline
-                    const polyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
-                    
-                    // Create points for polyline
-                    const points = activityValues.map((value, index) => {
-                        const x = (index / (activityValues.length - 1)) * sparkWidth;
-                        const y = sparkHeight - (value / maxActivity) * sparkHeight;
-                        return `${x},${y}`;
-                    }).join(' ');
-                    
-                    polyline.setAttribute('points', points);
-                    polyline.setAttribute('fill', 'none');
-                    polyline.setAttribute('stroke', '#FF4500');
-                    polyline.setAttribute('stroke-width', '1.5');
-                    
-                    // Add dot for last point
-                    const lastX = sparkWidth;
-                    const lastY = sparkHeight - (activityValues[activityValues.length - 1] / maxActivity) * sparkHeight;
-                    const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-                    dot.setAttribute('cx', lastX);
-                    dot.setAttribute('cy', lastY);
-                    dot.setAttribute('r', '2');
-                    dot.setAttribute('fill', '#FF4500');
-                    
-                    svg.appendChild(polyline);
-                    svg.appendChild(dot);
-                    sparklineCell.appendChild(svg);
-                    
-                    // Add tooltip with activity trend data
-                    sparklineCell.setAttribute('title', `Activity trend for the last ${activityValues.length} days`);
-                    
-                    // Add streak information
-                    if (userData.streak > 1) {
-                        const streakBadge = document.createElement('span');
-                        streakBadge.className = 'ml-1 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800';
-                        streakBadge.textContent = `${userData.streak}d`;
-                        sparklineCell.appendChild(streakBadge);
-                    }
-                    
-                    // Insert the sparkline cell after the activity column (5th column)
-                    const activityCell = row.querySelector('td:nth-child(5)');
-                    if (activityCell) {
-                        activityCell.after(sparklineCell);
-                    }
-                }
-            } catch (error) {
-                console.error(`Error fetching data for ${username}:`, error);
-            }
         }
     }
     
@@ -1060,8 +1062,8 @@
                             {
                                 label: 'Activity',
                                 data: activityData.map(d => d.count),
-                                backgroundColor: 'rgba(255, 69, 0, 0.2)',
-                                borderColor: '#FF4500',
+                                backgroundColor: 'rgba(255, 150, 102, 0.2)',
+                                borderColor: '#FF9666',
                                 borderWidth: 1,
                                 borderRadius: 4
                             },
@@ -1083,7 +1085,7 @@
                         plugins: {
                             legend: {
                                 display: true,
-                                labels: { color: textColor }
+                                labels: { color: isDarkMode ? '#ffffff' : textColor  }
                             },
                             tooltip: {
                                 callbacks: {
@@ -1158,12 +1160,21 @@
             
             // Generate HTML
             chartInsights.innerHTML = `
-                <h3 class="font-bold text-lg mb-2">Activity Insights</h3>
-                <ul class="space-y-2">
-                    <li><span class="font-medium">Peak activity:</span> ${peakHour.hour}:00 UTC with ${peakHour.count} activities</li>
-                    <li><span class="font-medium">Least active:</span> ${lowHour.hour}:00 UTC with ${lowHour.count} activities</li>
-                    <li><span class="font-medium">Best posting time:</span> ${peakHour.hour}:00 UTC for maximum engagement</li>
-                </ul>
+                <h3 class="font-semibold text-lg mb-3">Activity Insights</h3>
+                <div class="grid gap-3 md:grid-cols-2">
+                    <div class="p-3 rounded-md bg-[var(--reddit-orange-subtle)]">
+                        <div class="font-medium">Peak Activity</div>
+                        <div class="text-[var(--reddit-text)] mt-1">
+                            <span class="font-bold">${peakHour.hour}:00 UTC</span> with ${peakHour.count} activities
+                        </div>
+                    </div>
+                    <div class="p-3 rounded-md bg-[var(--table-header)]">
+                        <div class="font-medium">Best Time to Post</div>
+                        <div class="text-[var(--reddit-text)] mt-1">
+                            <span class="font-bold">${peakHour.hour}:00 UTC</span> for maximum engagement
+                        </div>
+                    </div>
+                </div>
             `;
             
             // Add peak hours only if there are some
@@ -1174,14 +1185,16 @@
                     : peakHours.join(', ');
                     
                 const peakHoursHtml = `
-                    <li><span class="font-medium">Active hours:</span> ${displayedPeakHours} (above average)</li>
+                    <div class="mt-3 p-3 rounded-md border border-[var(--reddit-border)]">
+                        <div class="font-medium">Active Hours</div>
+                        <div class="text-[var(--reddit-text)] mt-1">
+                            ${displayedPeakHours} <span class="text-[var(--reddit-light-text)] text-sm">(above average)</span>
+                        </div>
+                    </div>
                 `;
                 
-                // Insert after the second list item
-                const listItems = chartInsights.querySelectorAll('li');
-                if (listItems.length >= 2) {
-                    listItems[1].insertAdjacentHTML('afterend', peakHoursHtml);
-                }
+                // Append to insights
+                chartInsights.insertAdjacentHTML('beforeend', peakHoursHtml);
             }
             
         } catch (error) {
