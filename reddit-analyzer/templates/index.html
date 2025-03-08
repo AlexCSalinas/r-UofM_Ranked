@@ -94,6 +94,7 @@
             height: 24px;
             position: relative;
             width: 44px;
+            margin: 0 8px;
         }
         
         .theme-switch input {
@@ -309,7 +310,7 @@
             scroll-behavior: smooth;
         }
         
-        /* Loading animation - Simplified */
+        /* Loading animation - Updated to use Geist icons */
         .loading-overlay {
             position: fixed;
             top: 0;
@@ -324,12 +325,7 @@
         }
         
         .loading-spinner {
-            width: 36px;
-            height: 36px;
-            border: 3px solid var(--reddit-orange);
-            border-bottom-color: transparent;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
+            animation: spin 1.5s linear infinite;
         }
         
         @keyframes spin {
@@ -358,24 +354,62 @@
             border-radius: 8px;
             overflow: hidden;
         }
+        
+        /* Icon styling */
+        .icon {
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
+        }
+        
+        /* Section headings with icons */
+        .section-heading {
+            display: flex;
+            align-items: center;
+        }
+        
+        .section-heading svg {
+            margin-right: 0.5rem;
+        }
+        
+        /* Stats with icons */
+        .stat-item {
+            display: flex;
+            align-items: center;
+        }
+        
+        .stat-item svg {
+            margin-right: 0.5rem;
+            flex-shrink: 0;
+        }
     </style>
 </head>
 <body>
-    <!-- Loading overlay -->
+    <!-- Loading overlay with Geist loader icon -->
     <div class="loading-overlay">
-        <div class="loading-spinner"></div>
+        <div class="flex flex-col items-center">
+            <svg class="loading-spinner w-10 h-10 text-[var(--reddit-orange)]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10" stroke-opacity="0.25"/>
+                <path d="M12 2a10 10 0 0 1 10 10" stroke-opacity="1"/>
+            </svg>
+            <span class="mt-3 text-[var(--reddit-text)]">Loading analytics...</span>
+        </div>
     </div>
 
-    <!-- Navigation header -->
+    <!-- Navigation header with Geist icons -->
     <nav class="bg-[var(--reddit-card)] shadow-sm sticky top-0 z-50 nav-header">
         <div class="container mx-auto px-4 py-3">
             <div class="flex justify-between items-center">
-                <!-- Left side - Logo and title -->
+                <!-- Left side - Logo and title with analytics icon -->
                 <div class="flex items-center">
                     <div class="text-[var(--reddit-orange)] mr-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-7 h-7">
-                            <path d="M10 0C4.478 0 0 4.478 0 10c0 5.523 4.478 10 10 10 5.523 0 10-4.477 10-10 0-5.522-4.477-10-10-10z"/>
-                            <path fill="white" d="M16.671 10c0-.875-.704-1.583-1.569-1.583-.438 0-.828.171-1.103.444-1.086-.737-2.584-1.208-4.253-1.266l.85-3.003 2.442.533c.031.658.56 1.175 1.225 1.175.68 0 1.237-.546 1.237-1.228 0-.683-.557-1.229-1.237-1.229-.48 0-.903.275-1.096.686l-2.737-.598a.329.329 0 00-.391.219l-1.022 3.616c-1.719.026-3.218.497-4.333 1.234a1.581 1.581 0 00-1.117-.444c-.865 0-1.569.708-1.569 1.583 0 .657.387 1.212.943 1.462a3.083 3.083 0 00-.027.448c0 2.291 2.665 4.145 5.952 4.145 3.288 0 5.954-1.854 5.954-4.145 0-.152-.01-.302-.026-.448.556-.25.942-.805.942-1.462z"/>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-7 h-7 icon">
+                            <rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
+                            <rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
+                            <line x1="6" y1="6" x2="6" y2="6"/>
+                            <line x1="6" y1="18" x2="6" y2="18"/>
                         </svg>
                     </div>
                     <div>
@@ -383,53 +417,125 @@
                     </div>
                 </div>
                 
-                <!-- Right side - Mobile menu button -->
+                <!-- Right side - Mobile menu button with Geist menu icon -->
                 <div class="md:hidden">
                     <button id="mobileMenuBtn" class="p-2 rounded-md text-[var(--reddit-text)] hover:bg-gray-100 focus:outline-none">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-6 w-6">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-6 w-6 icon">
+                            <line x1="3" y1="12" x2="21" y2="12"/>
+                            <line x1="3" y1="6" x2="21" y2="6"/>
+                            <line x1="3" y1="18" x2="21" y2="18"/>
                         </svg>
                     </button>
                 </div>
                 
-                <!-- Desktop navigation links -->
+                <!-- Desktop navigation links with Geist icons -->
                 <div class="hidden md:flex space-x-4 items-center">
-                    <a href="#contributors" class="px-3 py-2 rounded-md text-sm font-medium text-[var(--reddit-text)] hover:text-[var(--reddit-orange)] transition-colors">Contributors</a>
-                    <a href="#rising-stars" class="px-3 py-2 rounded-md text-sm font-medium text-[var(--reddit-text)] hover:text-[var(--reddit-orange)] transition-colors">Rising Stars</a>
-                    <a href="#activity" class="px-3 py-2 rounded-md text-sm font-medium text-[var(--reddit-text)] hover:text-[var(--reddit-orange)] transition-colors">Activity</a>
+                    <a href="#contributors" class="px-3 py-2 rounded-md text-sm font-medium text-[var(--reddit-text)] hover:text-[var(--reddit-orange)] transition-colors flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 mr-1 icon">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
+                        Contributors
+                    </a>
+                    <a href="#rising-stars" class="px-3 py-2 rounded-md text-sm font-medium text-[var(--reddit-text)] hover:text-[var(--reddit-orange)] transition-colors flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 mr-1 icon">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                        </svg>
+                        Rising Stars
+                    </a>
+                    <a href="#activity" class="px-3 py-2 rounded-md text-sm font-medium text-[var(--reddit-text)] hover:text-[var(--reddit-orange)] transition-colors flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 mr-1 icon">
+                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                        </svg>
+                        Activity
+                    </a>
                     <span class="text-[var(--reddit-light-text)] self-center mx-2">|</span>
-                    <span class="text-sm self-center text-[var(--reddit-light-text)]">Last updated: {{ last_updated }}</span>
+                    <span class="text-sm self-center text-[var(--reddit-light-text)] flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 mr-1 icon">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                        Last updated: {{ last_updated }}
+                    </span>
                 </div>
             </div>
         </div>
         
-        <!-- Mobile menu (hidden by default) -->
+        <!-- Mobile menu (hidden by default) with Geist icons -->
         <div id="mobileMenu" class="hidden md:hidden bg-[var(--reddit-card)] pb-2 shadow-inner">
             <div class="px-2 pt-2 pb-3 space-y-1">
-                <a href="#contributors" class="block px-3 py-2 rounded-md text-base font-medium text-[var(--reddit-text)] hover:bg-[var(--reddit-orange-subtle)]">Contributors</a>
-                <a href="#rising-stars" class="block px-3 py-2 rounded-md text-base font-medium text-[var(--reddit-text)] hover:bg-[var(--reddit-orange-subtle)]">Rising Stars</a>
-                <a href="#activity" class="block px-3 py-2 rounded-md text-base font-medium text-[var(--reddit-text)] hover:bg-[var(--reddit-orange-subtle)]">Activity</a>
-                <div class="px-3 py-2 text-sm text-[var(--reddit-light-text)]">
+                <a href="#contributors" class="block px-3 py-2 rounded-md text-base font-medium text-[var(--reddit-text)] hover:bg-[var(--reddit-orange-subtle)] flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5 mr-2 icon">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                    Contributors
+                </a>
+                <a href="#rising-stars" class="block px-3 py-2 rounded-md text-base font-medium text-[var(--reddit-text)] hover:bg-[var(--reddit-orange-subtle)] flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5 mr-2 icon">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                    </svg>
+                    Rising Stars
+                </a>
+                <a href="#activity" class="block px-3 py-2 rounded-md text-base font-medium text-[var(--reddit-text)] hover:bg-[var(--reddit-orange-subtle)] flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5 mr-2 icon">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                    </svg>
+                    Activity
+                </a>
+                <div class="px-3 py-2 text-sm text-[var(--reddit-light-text)] flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 mr-2 icon">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12 6 12 12 16 14"/>
+                    </svg>
                     Last updated: {{ last_updated }}
                 </div>
             </div>
         </div>
     </nav>
 
-    <!-- Theme toggle -->
+    <!-- Theme toggle with Geist sun/moon icons -->
     <div class="theme-switch-wrapper">
-        <div class="theme-icon"></div>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5 text-[var(--reddit-light-text)] icon">
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1" x2="12" y2="3"/>
+            <line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1" y1="12" x2="3" y2="12"/>
+            <line x1="21" y1="12" x2="23" y2="12"/>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
         <label class="theme-switch" for="checkbox">
             <input type="checkbox" id="checkbox" />
             <div class="slider"></div>
         </label>
-        <div class="theme-icon"></div>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5 text-[var(--reddit-light-text)] icon">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
     </div>
 
     <!-- Main content container -->
     <div class="container mx-auto px-4 py-8 max-w-5xl">
-        <h1 class="text-2xl font-bold mb-4 text-center text-[var(--reddit-text)]">Community Analysis for r/{{ subreddit }}</h1>
-        <div class="text-center text-[var(--reddit-light-text)] mb-8">
+        <h1 class="text-2xl font-bold mb-4 text-center text-[var(--reddit-text)] flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-6 h-6 mr-2 icon">
+                <rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
+                <rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
+                <line x1="6" y1="6" x2="6" y2="6"/>
+                <line x1="6" y1="18" x2="6" y2="18"/>
+            </svg>
+            Community Analysis for r/{{ subreddit }}
+        </h1>
+        <div class="text-center text-[var(--reddit-light-text)] mb-8 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 mr-1 icon">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+            </svg>
             {% if last_updated %}
                 Last updated: {{ last_updated }}
             {% else %}
@@ -437,64 +543,74 @@
             {% endif %}
         </div>
 
-        <!-- Data filters card - UPDATED -->
-        <div class="reddit-card p-4 mb-8 filters-card">
-            <div class="flex flex-col sm:flex-row justify-between items-center mb-2">
-                <h3 class="text-base font-semibold mb-3 sm:mb-0 text-[var(--reddit-text)] flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-[var(--reddit-orange)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                    </svg>
-                    Filters
-                    <button id="toggleFilters" class="ml-2 text-xs text-[var(--reddit-light-text)] hover:text-[var(--reddit-orange)] transition-colors">
-                        <span id="filterToggleText">Hide</span>
-                    </button>
-                </h3>
-                <button id="resetFilters" class="supabase-button !py-1.5 !px-3 text-xs">
-                    Reset
-                </button>
-            </div>
-            
-            <div id="filtersContainer" class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-2">
-                <!-- User Type Filter -->
-                <div>
-                    <label class="block text-[var(--reddit-light-text)] text-xs font-medium mb-1">User Type</label>
-                    <select id="userTypeFilter" class="w-full py-1.5">
-                        <option value="all">All Users</option>
-                        <option value="new">New Users Only</option>
-                        <option value="rising">Rising Users Only</option>
-                        <option value="top">Top 5 Users Only</option>
-                    </select>
-                </div>
-                
-                <!-- Activity Time Range -->
-                <div>
-                    <label class="block text-[var(--reddit-light-text)] text-xs font-medium mb-1">Chart Hours</label>
-                    <select id="timeRangeFilter" class="w-full py-1.5">
-                        <option value="all">All Hours</option>
-                        <option value="peak">Peak Hours Only</option>
-                        <option value="morning">Morning (6-12)</option>
-                        <option value="afternoon">Afternoon (12-18)</option>
-                        <option value="evening">Evening (18-24)</option>
-                        <option value="night">Night (0-6)</option>
-                    </select>
-                </div>
-            </div>
-        </div>
 
         <!-- Top Contributors section -->
         <div class="mt-10" id="contributors">
-            <h2 class="text-xl font-bold mb-4 text-[var(--reddit-text)]">Top 10 Contributors Leaderboard</h2>
+            <h2 class="text-xl font-bold mb-4 text-[var(--reddit-text)] section-heading">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-6 h-6 mr-2 icon">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+                Top 10 Contributors Leaderboard
+            </h2>
             <div class="reddit-card overflow-hidden supabase-card">
                 <div class="overflow-x-auto">
                     <table>
                         <thead>
                             <tr>
-                                <th class="w-14">Rank</th>
-                                <th>User</th>
-                                <th class="text-center w-16">Posts</th>
-                                <th class="text-center w-24">Comments</th>
-                                <th class="text-center w-20">Activity</th>
-                                <th class="text-center w-24">Trend</th>
+                                <th class="w-14">
+                                    <div class="flex items-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 mr-1 icon">
+                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                                        </svg>
+                                        Rank
+                                    </div>
+                                </th>
+                                <th>
+                                    <div class="flex items-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 mr-1 icon">
+                                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                            <circle cx="12" cy="7" r="4"/>
+                                        </svg>
+                                        User
+                                    </div>
+                                </th>
+                                <th class="text-center w-16">
+                                    <div class="flex items-center justify-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 mr-1 icon">
+                                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                            <polyline points="14 2 14 8 20 8"/>
+                                        </svg>
+                                        Posts
+                                    </div>
+                                </th>
+                                <th class="text-center w-24">
+                                    <div class="flex items-center justify-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 mr-1 icon">
+                                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                                        </svg>
+                                        Comments
+                                    </div>
+                                </th>
+                                <th class="text-center w-20">
+                                    <div class="flex items-center justify-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 mr-1 icon">
+                                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                                        </svg>
+                                        Activity
+                                    </div>
+                                </th>
+                                <th class="text-center w-24">
+                                    <div class="flex items-center justify-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 mr-1 icon">
+                                            <path d="M23 6l-9.5 9.5-5-5L1 18"/>
+                                            <path d="M17 6h6v6"/>
+                                        </svg>
+                                        Trend
+                                    </div>
+                                </th>
                             </tr>
                         </thead>
                         <tbody>
@@ -508,7 +624,12 @@
                                             u/{{ username }}
                                         </a>
                                         {% if stats.position_change == 'new' %}
-                                        <span class="ml-2 badge badge-green">New!</span>
+                                        <span class="ml-2 badge badge-green">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3 h-3 mr-1 icon">
+                                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                                            </svg>
+                                            New!
+                                        </span>
                                         {% endif %}
                                     </div>
                                 </td>
@@ -517,23 +638,34 @@
                                 <td class="text-center font-medium">{{ stats.total_activity }}</td>
                                 <td class="text-center">
                                     {% if stats.position_change == 'new' %}
-                                        <span class="badge badge-blue">New</span>
+                                        <span class="badge badge-blue">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3 h-3 mr-1 icon">
+                                                <circle cx="12" cy="12" r="10"/>
+                                                <line x1="12" y1="8" x2="12" y2="16"/>
+                                                <line x1="8" y1="12" x2="16" y2="12"/>
+                                            </svg>
+                                            New
+                                        </span>
                                     {% elif stats.position_change > 0 %}
                                         <span class="text-green-600 font-semibold flex items-center justify-center">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-0.5" viewBox="0 0 20 20" fill="currentColor">
-                                                <path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd" />
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 mr-0.5 icon">
+                                                <polyline points="18 15 12 9 6 15"/>
                                             </svg>
                                             {{ stats.position_change }}
                                         </span>
                                     {% elif stats.position_change < 0 %}
                                         <span class="text-red-600 font-semibold flex items-center justify-center">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-0.5" viewBox="0 0 20 20" fill="currentColor">
-                                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 mr-0.5 icon">
+                                                <polyline points="6 9 12 15 18 9"/>
                                             </svg>
                                             {{ stats.position_change|abs }}
                                         </span>
                                     {% else %}
-                                        <span class="text-gray-500">-</span>
+                                        <span class="text-gray-500">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 icon">
+                                                <line x1="5" y1="12" x2="19" y2="12"/>
+                                            </svg>
+                                        </span>
                                     {% endif %}
                                 </td>
                             </tr>
@@ -548,45 +680,80 @@
         <!-- Rising Stars Section -->
         {% if rising_stars %}
         <div class="mt-10" id="rising-stars">
-            <h2 class="text-xl font-bold mb-4 text-[var(--reddit-text)]">Rising Stars</h2>
+            <h2 class="text-xl font-bold mb-4 text-[var(--reddit-text)] section-heading">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-6 h-6 mr-2 icon">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+                Rising Stars
+            </h2>
             <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {% for star in rising_stars %}
                 <div class="reddit-card relative overflow-hidden border-[var(--reddit-border)] supabase-card">
-                    <!-- Star badge in corner -->
-                    <div class="absolute top-0 right-0">
-                        <div class="w-16 h-16 text-center rotate-45 bg-[var(--reddit-orange)] text-white transform translate-x-8 -translate-y-1">
-                            <div class="mt-10 -rotate-45">⭐</div>
-                        </div>
-                    </div>
-                    
                     <div class="p-5">
                         <div class="mb-3">
-                            <a href="https://reddit.com/u/{{ star.username }}" target="_blank" class="reddit-link text-lg">
-                                u/{{ star.username }}
-                            </a>
-                            <div class="text-sm text-[var(--reddit-light-text)] mt-1">Rank #{{ star.stats.current_rank }}</div>
+                            <div class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5 mr-1 icon text-[var(--reddit-orange)]">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                    <circle cx="12" cy="7" r="4"/>
+                                </svg>
+                                <a href="https://reddit.com/u/{{ star.username }}" target="_blank" class="reddit-link text-lg">
+                                    u/{{ star.username }}
+                                </a>
+                            </div>
+                            <div class="text-sm text-[var(--reddit-light-text)] mt-1 flex items-center">
+                                Rank #{{ star.stats.current_rank }}
+                            </div>
                         </div>
                         
                         <div class="bg-[var(--reddit-orange-subtle)] rounded-md p-3 mb-4">
-                            <div class="text-[var(--reddit-orange)] font-medium">{{ star.reason }}</div>
+                            <div class="text-[var(--reddit-orange)] font-medium flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 mr-1 icon">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <line x1="12" y1="8" x2="12" y2="16"/>
+                                    <line x1="8" y1="12" x2="16" y2="12"/>
+                                </svg>
+                                {{ star.reason }}
+                            </div>
                         </div>
                         
                         <div class="space-y-2">
-                            <div class="flex justify-between items-center py-1">
-                                <span class="text-[var(--reddit-light-text)]">Posts</span>
+                            <div class="flex justify-between items-center py-1 stat-item">
+                                <span class="text-[var(--reddit-light-text)] flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 mr-1 icon">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                        <polyline points="14 2 14 8 20 8"/>
+                                    </svg>
+                                    Posts
+                                </span>
                                 <span class="font-medium">{{ star.stats.post_count }}</span>
                             </div>
-                            <div class="flex justify-between items-center py-1">
-                                <span class="text-[var(--reddit-light-text)]">Comments</span>
+                            <div class="flex justify-between items-center py-1 stat-item">
+                                <span class="text-[var(--reddit-light-text)] flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 mr-1 icon">
+                                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                                    </svg>
+                                    Comments
+                                </span>
                                 <span class="font-medium">{{ star.stats.comment_count }}</span>
                             </div>
-                            <div class="flex justify-between items-center py-1">
-                                <span class="text-[var(--reddit-light-text)]">Activity</span>
+                            <div class="flex justify-between items-center py-1 stat-item">
+                                <span class="text-[var(--reddit-light-text)] flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 mr-1 icon">
+                                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                                    </svg>
+                                    Activity
+                                </span>
                                 <span class="font-medium">{{ star.stats.total_activity }}</span>
                             </div>
                             {% if star.stats.streak %}
-                            <div class="flex justify-between items-center py-1">
-                                <span class="text-[var(--reddit-light-text)]">Streak</span>
+                            <div class="flex justify-between items-center py-1 stat-item">
+                                <span class="text-[var(--reddit-light-text)] flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 mr-1 icon">
+                                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                        <polyline points="22 4 12 14.01 9 11.01"/>
+                                    </svg>
+                                    Streak
+                                </span>
                                 <span class="font-medium">{{ star.stats.streak }} days</span>
                             </div>
                             {% endif %}
@@ -595,8 +762,8 @@
                         {% if star.stats.position_change != 'new' and star.stats.position_change > 0 %}
                         <div class="mt-4 pt-3 border-t border-[var(--reddit-border)] text-center">
                             <span class="badge badge-green">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd" />
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3 h-3 mr-1 icon">
+                                    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
                                 </svg>
                                 Up {{ star.stats.position_change }} ranks
                             </span>
@@ -611,11 +778,19 @@
 
         <!-- Activity Chart Section -->
         <div class="mt-10" id="activity">
-            <h2 class="text-xl font-bold mb-4 text-[var(--reddit-text)]">Community Activity Times</h2>
+            <h2 class="text-xl font-bold mb-4 text-[var(--reddit-text)] section-heading">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-6 h-6 mr-2 icon">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                </svg>
+                Community Activity Times
+            </h2>
             <div class="reddit-card p-5 activity-card supabase-card">
-                <!-- Loading indicator -->
+                <!-- Loading indicator with Geist loading icon -->
                 <div id="chartLoading" class="flex justify-center items-center py-8">
-                    <div class="w-8 h-8 border-3 border-[var(--reddit-orange)] border-t-transparent rounded-full animate-spin"></div>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-8 h-8 loading-spinner text-[var(--reddit-orange)] icon">
+                        <circle cx="12" cy="12" r="10" stroke-opacity="0.25"/>
+                        <path d="M12 2a10 10 0 0 1 10 10" stroke-opacity="1"/>
+                    </svg>
                     <span class="ml-3 text-[var(--reddit-text)]">Loading chart...</span>
                 </div>
                 
@@ -624,18 +799,33 @@
                     <canvas id="activityChart" class="w-full h-full"></canvas>
                 </div>
                 
-                <!-- Insights section -->
+                <!-- Insights section with Geist icons -->
                 <div id="chartInsights" class="mt-5 pt-4 border-t border-[var(--reddit-border)] text-[var(--reddit-text)]"></div>
             </div>
         </div>
+        
+        
     </div>
 
-    <!-- Back to Top Button -->
-    <button id="backToTopBtn" class="fixed bottom-4 right-4 bg-[var(--reddit-orange)] text-white p-3 rounded-full shadow-lg z-50 opacity-0 pointer-events-none transition-opacity duration-300">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd" />
+    <!-- Back to Top Button with Geist arrow-up icon -->
+    <button id="backToTopBtn" class="fixed bottom-4 right-4 bg-[var(--reddit-card)] text-[var(--reddit-text)] p-3 rounded-full shadow-lg z-50 opacity-0 pointer-events-none transition-opacity duration-300 border border-[var(--reddit-border)]">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-5 w-5 icon">
+            <polyline points="18 15 12 9 6 15"/>
         </svg>
     </button>
+    
+    <!-- Footer with Geist Icons -->
+    <footer class="mt-16 py-6 border-t border-[var(--reddit-border)]">
+            <div class="flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 mr-1 icon">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                <span>Made by Alex</span>
+            </div>
+        </div>
+    </footer>
     
     <!-- Scripts -->
     <script>
@@ -868,7 +1058,7 @@
                         // Extract the numeric part from trend up elements
                         const getUpValue = (el) => {
                             if (!el) return -999;
-                            const svgUp = el.querySelector('svg[viewBox="0 0 20 20"] path[d^="M14.707 12.707"]');
+                            const svgUp = el.querySelector('svg[viewBox="0 0 24 24"] polyline[points="18 15 12 9 6 15"]');
                             const match = svgUp && el.textContent.match(/\d+/);
                             return match ? parseInt(match[0]) : -999;
                         };
@@ -891,7 +1081,7 @@
                         // Extract the numeric part from trend down elements
                         const getDownValue = (el) => {
                             if (!el) return -999;
-                            const svgDown = el.querySelector('svg[viewBox="0 0 20 20"] path[d^="M5.293 7.293"]');
+                            const svgDown = el.querySelector('svg[viewBox="0 0 24 24"] polyline[points="6 9 12 15 18 9"]');
                             const match = svgDown && el.textContent.match(/\d+/);
                             return match ? parseInt(match[0]) : -999;
                         };
@@ -991,8 +1181,13 @@
                 if (!heading) return;
                 
                 const toggleBtn = document.createElement('button');
-                toggleBtn.className = 'toggle-collapse supabase-button w-full text-center mt-2 p-2';
-                toggleBtn.textContent = 'Show More';
+                toggleBtn.className = 'toggle-collapse supabase-button w-full text-center mt-2 p-2 flex items-center justify-center';
+                toggleBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 mr-1 icon">
+                        <polyline points="6 9 12 15 18 9"/>
+                    </svg>
+                    Show More
+                `;
                 toggleBtn.setAttribute('aria-expanded', 'false');
                 
                 section.appendChild(toggleBtn);
@@ -1001,11 +1196,21 @@
                 toggleBtn.addEventListener('click', () => {
                     if (content.style.maxHeight === '3.5rem') {
                         content.style.maxHeight = '2000px';
-                        toggleBtn.textContent = 'Show Less';
+                        toggleBtn.innerHTML = `
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 mr-1 icon">
+                                <polyline points="18 15 12 9 6 15"/>
+                            </svg>
+                            Show Less
+                        `;
                         toggleBtn.setAttribute('aria-expanded', 'true');
                     } else {
                         content.style.maxHeight = '3.5rem';
-                        toggleBtn.textContent = 'Show More';
+                        toggleBtn.innerHTML = `
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 mr-1 icon">
+                                <polyline points="6 9 12 15 18 9"/>
+                            </svg>
+                            Show More
+                        `;
                         toggleBtn.setAttribute('aria-expanded', 'false');
                     }
                 });
@@ -1030,7 +1235,16 @@
                 
                 // Skip rendering if there's no meaningful data
                 if (!activityData || activityData.length === 0) {
-                    chartLoading.innerHTML = '<p class="text-center text-[var(--reddit-light-text)]">No activity data available</p>';
+                    chartLoading.innerHTML = `
+                        <div class="text-center text-[var(--reddit-light-text)] flex flex-col items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-8 h-8 mb-2 icon">
+                                <circle cx="12" cy="12" r="10"/>
+                                <line x1="12" y1="8" x2="12" y2="12"/>
+                                <line x1="12" y1="16" x2="12.01" y2="16"/>
+                            </svg>
+                            <p>No activity data available</p>
+                        </div>
+                    `;
                     return;
                 }
                 
@@ -1126,7 +1340,16 @@
             } catch (error) {
                 // Handle errors gracefully
                 console.error('Error rendering chart:', error);
-                chartLoading.innerHTML = '<p class="text-center text-red-500">Error loading chart. Please try refreshing the page.</p>';
+                chartLoading.innerHTML = `
+                    <div class="text-center text-red-500 flex flex-col items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-8 h-8 mb-2 icon">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="8" x2="12" y2="12"/>
+                            <line x1="12" y1="16" x2="12.01" y2="16"/>
+                        </svg>
+                        <p>Error loading chart. Please try refreshing the page.</p>
+                    </div>
+                `;
             }
         }, 300); // Short delay to ensure DOM is ready
     }
@@ -1160,16 +1383,39 @@
             
             // Generate HTML
             chartInsights.innerHTML = `
-                <h3 class="font-semibold text-lg mb-3">Activity Insights</h3>
+                <h3 class="font-semibold text-lg mb-3 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5 mr-2 icon">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+                        <line x1="9" y1="9" x2="9.01" y2="9"/>
+                        <line x1="15" y1="9" x2="15.01" y2="9"/>
+                    </svg>
+                    Activity Insights
+                </h3>
                 <div class="grid gap-3 md:grid-cols-2">
                     <div class="p-3 rounded-md bg-[var(--reddit-orange-subtle)]">
-                        <div class="font-medium">Peak Activity</div>
+                        <div class="font-medium flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 mr-1 icon text-[var(--reddit-orange)]">
+                                <circle cx="12" cy="12" r="10"/>
+                                <line x1="22" y1="12" x2="18" y2="12"/>
+                                <line x1="6" y1="12" x2="2" y2="12"/>
+                                <line x1="12" y1="6" x2="12" y2="2"/>
+                                <line x1="12" y1="22" x2="12" y2="18"/>
+                            </svg>
+                            Peak Activity
+                        </div>
                         <div class="text-[var(--reddit-text)] mt-1">
                             <span class="font-bold">${peakHour.hour}:00 UTC</span> with ${peakHour.count} activities
                         </div>
                     </div>
                     <div class="p-3 rounded-md bg-[var(--table-header)]">
-                        <div class="font-medium">Best Time to Post</div>
+                        <div class="font-medium flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 mr-1 icon">
+                                <circle cx="12" cy="12" r="10"/>
+                                <polyline points="12 6 12 12 16 14"/>
+                            </svg>
+                            Best Time to Post
+                        </div>
                         <div class="text-[var(--reddit-text)] mt-1">
                             <span class="font-bold">${peakHour.hour}:00 UTC</span> for maximum engagement
                         </div>
@@ -1186,7 +1432,13 @@
                     
                 const peakHoursHtml = `
                     <div class="mt-3 p-3 rounded-md border border-[var(--reddit-border)]">
-                        <div class="font-medium">Active Hours</div>
+                        <div class="font-medium flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 mr-1 icon">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                <polyline points="22 4 12 14.01 9 11.01"/>
+                            </svg>
+                            Active Hours
+                        </div>
                         <div class="text-[var(--reddit-text)] mt-1">
                             ${displayedPeakHours} <span class="text-[var(--reddit-light-text)] text-sm">(above average)</span>
                         </div>
