@@ -3,1456 +3,339 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>r/{{ subreddit }} Community Analysis</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <title>r/{{ subreddit }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.1.0/dist/chartjs-plugin-annotation.min.js"></script>
     <style>
-        /* Custom variables - Supabase inspired with subdued Reddit colors */
         :root {
-            --reddit-orange: #FF9666; /* Lighter orange */
-            --reddit-orange-subtle: rgba(255, 150, 102, 0.15);
-            --reddit-orange-hover: rgba(255, 150, 102, 0.25);
-            --reddit-background: #f8f9fa;
-            --reddit-card: #FFFFFF;
-            --reddit-text: #1A1A1B;
-            --reddit-light-text: #6e6e6e;
-            --reddit-border: #e1e4e8;
-            --supabase-button: #FF9666;
-            --reddit-hover-border: #898989;
-            --chart-grid: rgba(0, 0, 0, 0.06);
-            --tooltip-bg: rgba(26, 26, 27, 0.9);
-            --table-hover: rgba(255, 150, 102, 0.03);
-            --table-header: #f1f3f5;
+            --bg: #ffffff;
+            --surface: #ffffff;
+            --text: #111111;
+            --muted: #6b6b6b;
+            --faint: #ededed;
+            --border: #e5e5e5;
+            --accent: #111111;
         }
-        
-        /* Dark mode variables - Supabase inspired */
+
         [data-theme="dark"] {
-            --reddit-orange: #FF9666; /* Lighter orange */
-            --reddit-orange-subtle: rgba(255, 150, 102, 0.2);
-            --reddit-orange-hover: rgba(255, 150, 102, 0.3);
-            --reddit-background: #1a1a1a;
-            --reddit-card: #1f1f1f;
-            --reddit-text: #f1f1f1;
-            --reddit-light-text: #ababab;
-            --reddit-border: #2c2c2c;
-            --supabase-button: #FF9666;
-            --reddit-hover-border: #4d4d4d;
-            --chart-grid: rgba(255, 255, 255, 0.06);
-            --tooltip-bg: rgba(50, 50, 50, 0.9);
-            --table-hover: rgba(255, 150, 102, 0.1);
-            --table-header: #252525;
+            --bg: #0e0e0e;
+            --surface: #0e0e0e;
+            --text: #e9e9e9;
+            --muted: #8a8a8a;
+            --faint: #1a1a1a;
+            --border: #222222;
+            --accent: #e9e9e9;
         }
-        
-        /* Base styles */
-        body {
-            font-family: Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
-            background-color: var(--reddit-background);
-            color: var(--reddit-text);
-            overflow-x: hidden;
+
+        * { box-sizing: border-box; }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 15px;
+            line-height: 1.55;
+            -webkit-font-smoothing: antialiased;
         }
-        
-        .reddit-link {
-            color: var(--reddit-orange);
+
+        a {
+            color: var(--text);
             text-decoration: none;
-            font-weight: 500;
+            border-bottom: 1px solid var(--border);
+            transition: border-color 0.15s ease;
         }
-        
-        .reddit-link:hover {
-            text-decoration: underline;
+        a:hover { border-color: var(--text); }
+
+        .container {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 64px 24px 96px;
         }
-        
-        .reddit-card {
-            background-color: var(--reddit-card);
-            border: 1px solid var(--reddit-border);
-            border-radius: 6px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-            transition: all 0.2s ease;
-        }
-        
-        .reddit-card:hover {
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-        
-        h1, h2, h3, h4, h5, h6 {
-            color: var(--reddit-text);
-            font-weight: 600;
-        }
-        
-        /* Toggle switch styling - Modernized */
-        .theme-switch-wrapper {
+
+        header {
             display: flex;
-            align-items: center;
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 100;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 48px;
         }
-        
-        .theme-switch {
-            display: inline-block;
-            height: 24px;
-            position: relative;
-            width: 44px;
-            margin: 0 8px;
+
+        header h1 {
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            margin: 0;
         }
-        
-        .theme-switch input {
-            display: none;
+
+        .meta {
+            color: var(--muted);
+            font-size: 13px;
         }
-        
-        .slider {
-            background-color: #e1e4e8;
-            bottom: 0;
-            cursor: pointer;
-            left: 0;
-            position: absolute;
-            right: 0;
-            top: 0;
-            transition: .3s;
-            border-radius: 34px;
+
+        section { margin-top: 56px; }
+
+        section h2 {
+            font-size: 13px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--muted);
+            margin: 0 0 16px;
         }
-        
-        .slider:before {
-            background-color: white;
-            bottom: 4px;
-            content: "";
-            height: 16px;
-            left: 4px;
-            position: absolute;
-            transition: .3s;
-            width: 16px;
-            border-radius: 50%;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-        }
-        
-        input:checked + .slider {
-            background-color: var(--reddit-orange);
-        }
-        
-        input:checked + .slider:before {
-            transform: translateX(20px);
-        }
-        
-        /* Supabase-inspired tables */
+
         table {
             width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            font-size: 0.925rem;
+            border-collapse: collapse;
+            font-variant-numeric: tabular-nums;
         }
-        
-        table th {
-            background-color: var(--table-header);
-            font-weight: 500;
+
+        th, td {
             text-align: left;
-            padding: 0.75rem 1rem;
-            border-bottom: 1px solid var(--reddit-border);
-            color: var(--reddit-text);
-            position: sticky;
-            top: 0;
-            z-index: 10;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+            font-weight: 400;
+            font-size: 14px;
         }
-        
-        table td {
-            padding: 0.75rem 1rem;
-            border-bottom: 1px solid var(--reddit-border);
-            color: var(--reddit-text);
-        }
-        
-        table tr:hover td {
-            background-color: var(--table-hover);
-        }
-        
-        /* Supabase-inspired buttons */
-        .supabase-button {
-            background-color: var(--reddit-orange-subtle);
-            color: var(--reddit-orange);
-            border: 1px solid transparent;
-            border-radius: 4px;
-            padding: 0.5rem 1rem;
+
+        th {
+            color: var(--muted);
             font-weight: 500;
-            font-size: 0.875rem;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
         }
-        
-        .supabase-button:hover {
-            background-color: var(--reddit-orange-hover);
+
+        th.num, td.num { text-align: right; }
+
+        tbody tr:last-child td { border-bottom: none; }
+
+        .rank {
+            color: var(--muted);
+            width: 32px;
         }
-        
-        .supabase-button-primary {
-            background-color: var(--supabase-button);
-            color: white;
+
+        .trend-up { color: #2a8a3e; }
+        .trend-down { color: #c0392b; }
+        .trend-flat { color: var(--muted); }
+        .trend-new {
+            color: var(--muted);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
         }
-        
-        .supabase-button-primary:hover {
-            background-color: #e58559;
+
+        .chart-wrap {
+            height: 260px;
+            position: relative;
+            margin-top: 8px;
         }
-        
-        .supabase-button-outline {
-            background-color: transparent;
-            border: 1px solid var(--reddit-border);
-            color: var(--reddit-text);
+
+        .chart-note {
+            margin-top: 16px;
+            color: var(--muted);
+            font-size: 13px;
         }
-        
-        .supabase-button-outline:hover {
-            background-color: rgba(0,0,0,0.03);
-            border-color: var(--reddit-hover-border);
-        }
-        
-        /* Modern form elements */
-        select, input {
-            background-color: var(--reddit-card);
-            border: 1px solid var(--reddit-border);
-            border-radius: 4px;
-            padding: 0.5rem;
-            font-size: 0.875rem;
-            color: var(--reddit-text);
-            transition: border-color 0.15s ease-in-out;
-            appearance: none;
-            -webkit-appearance: none;
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-            background-repeat: no-repeat;
-            background-position: right 0.5rem center;
-            background-size: 1em;
-            padding-right: 2rem;
-        }
-        
-        select:focus, input:focus {
-            outline: none;
-            border-color: var(--reddit-orange);
-            box-shadow: 0 0 0 2px var(--reddit-orange-subtle);
-        }
-        
-        /* Badge styling */
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            padding: 0.125rem 0.5rem;
-            border-radius: 999px;
-            font-size: 0.75rem;
-            font-weight: 500;
-            line-height: 1.5;
-        }
-        
-        .badge-green {
-            background-color: rgba(46, 160, 67, 0.1);
-            color: #2ea043;
-        }
-        
-        .badge-orange {
-            background-color: var(--reddit-orange-subtle);
-            color: var(--reddit-orange);
-        }
-        
-        .badge-purple {
-            background-color: rgba(111, 66, 193, 0.1);
-            color: #6f42c1;
-        }
-        
-        .badge-blue {
-            background-color: rgba(26, 115, 232, 0.1);
-            color: #1a73e8;
-        }
-        
-        /* Modern navigation */
-        .nav-header {
-            backdrop-filter: blur(8px);
-            background-color: rgba(var(--reddit-card-rgb), 0.8);
-            border-bottom: 1px solid var(--reddit-border);
-        }
-        
-        /* Responsive tables */
-        @media (max-width: 640px) {
-            table {
-                display: block;
-                overflow-x: auto;
-                -webkit-overflow-scrolling: touch;
-            }
-            
-            th, td {
-                white-space: nowrap;
-            }
-            
-            /* Hide less important columns on very small screens */
-            @media (max-width: 360px) {
-                .hide-xs {
-                    display: none;
-                }
-            }
-        }
-        
-        /* Mobile optimizations */
-        @media (max-width: 768px) {
-            .container {
-                padding: 0.5rem !important;
-            }
-            h1 {
-                font-size: 1.5rem !important;
-            }
-            h2 {
-                font-size: 1.25rem !important;
-            }
-            .reddit-card {
-                padding: 0.75rem !important;
-            }
-            table th, table td {
-                padding: 0.5rem 0.25rem !important;
-                font-size: 0.875rem !important;
-            }
-        }
-        
-        /* Smooth scrolling */
-        html {
-            scroll-behavior: smooth;
-        }
-        
-        /* Loading animation - Updated to use Geist icons */
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: var(--reddit-background);
+
+        .chart-note strong { color: var(--text); font-weight: 500; }
+
+        footer {
+            margin-top: 96px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 13px;
             display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-        }
-        
-        .loading-spinner {
-            animation: spin 1.5s linear infinite;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        /* Dark mode nav header */
-        [data-theme="dark"] .nav-header {
-            background-color: rgba(31, 31, 31, 0.8);
-        }
-        
-        /* Supabase-inspired design elements */
-        .supabase-card {
-            border-radius: 8px;
-            overflow: hidden;
-            transition: all 0.2s;
-        }
-        
-        .supabase-card:hover {
-            transform: translateY(-2px);
-        }
-        
-        /* Updated activity card styling */
-        .activity-card {
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        
-        /* Icon styling */
-        .icon {
-            stroke: currentColor;
-            stroke-width: 2;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-            fill: none;
-        }
-        
-        /* Section headings with icons */
-        .section-heading {
-            display: flex;
+            justify-content: space-between;
             align-items: center;
         }
-        
-        .section-heading svg {
-            margin-right: 0.5rem;
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: var(--muted);
+            font: inherit;
+            font-size: 13px;
+            cursor: pointer;
+            padding: 0;
         }
-        
-        /* Stats with icons */
-        .stat-item {
-            display: flex;
-            align-items: center;
-        }
-        
-        .stat-item svg {
-            margin-right: 0.5rem;
-            flex-shrink: 0;
+        .theme-toggle:hover { color: var(--text); }
+
+        @media (max-width: 520px) {
+            .container { padding: 32px 20px 64px; }
+            header { margin-bottom: 32px; }
+            section { margin-top: 40px; }
+            .hide-sm { display: none; }
         }
     </style>
 </head>
 <body>
-    <!-- Loading overlay with Geist loader icon -->
-    <div class="loading-overlay">
-        <div class="flex flex-col items-center">
-            <svg class="loading-spinner w-10 h-10 text-[var(--reddit-orange)]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10" stroke-opacity="0.25"/>
-                <path d="M12 2a10 10 0 0 1 10 10" stroke-opacity="1"/>
-            </svg>
-            <span class="mt-3 text-[var(--reddit-text)]">Loading analytics...</span>
-        </div>
-    </div>
+    <div class="container">
+        <header>
+            <h1>r/{{ subreddit }}</h1>
+            <span class="meta">
+                {% if last_updated %}Updated {{ last_updated }}{% else %}No data{% endif %}
+            </span>
+        </header>
 
-    <!-- Navigation header with Geist icons -->
-    <nav class="bg-[var(--reddit-card)] shadow-sm sticky top-0 z-50 nav-header">
-        <div class="container mx-auto px-4 py-3">
-            <div class="flex justify-between items-center">
-                <!-- Left side - Logo and title with analytics icon -->
-                <div class="flex items-center">
-                    <div class="text-[var(--reddit-orange)] mr-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-7 h-7 icon">
-                            <rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
-                            <rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
-                            <line x1="6" y1="6" x2="6" y2="6"/>
-                            <line x1="6" y1="18" x2="6" y2="18"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <h1 class="text-lg font-semibold text-[var(--reddit-text)]">r/{{ subreddit }} Analytics</h1>
-                    </div>
-                </div>
-                
-                <!-- Right side - Mobile menu button with Geist menu icon -->
-                <div class="md:hidden">
-                    <button id="mobileMenuBtn" class="p-2 rounded-md text-[var(--reddit-text)] hover:bg-gray-100 focus:outline-none">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-6 w-6 icon">
-                            <line x1="3" y1="12" x2="21" y2="12"/>
-                            <line x1="3" y1="6" x2="21" y2="6"/>
-                            <line x1="3" y1="18" x2="21" y2="18"/>
-                        </svg>
-                    </button>
-                </div>
-                
-                <!-- Desktop navigation links with Geist icons -->
-                <div class="hidden md:flex space-x-4 items-center">
-                    <a href="#contributors" class="px-3 py-2 rounded-md text-sm font-medium text-[var(--reddit-text)] hover:text-[var(--reddit-orange)] transition-colors flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 mr-1 icon">
-                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                            <circle cx="9" cy="7" r="4"/>
-                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                        </svg>
-                        Contributors
-                    </a>
-                    <a href="#rising-stars" class="px-3 py-2 rounded-md text-sm font-medium text-[var(--reddit-text)] hover:text-[var(--reddit-orange)] transition-colors flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 mr-1 icon">
-                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                        </svg>
-                        Rising Stars
-                    </a>
-                    <a href="#activity" class="px-3 py-2 rounded-md text-sm font-medium text-[var(--reddit-text)] hover:text-[var(--reddit-orange)] transition-colors flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 mr-1 icon">
-                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-                        </svg>
-                        Activity
-                    </a>
-                    <span class="text-[var(--reddit-light-text)] self-center mx-2">|</span>
-                    <span class="text-sm self-center text-[var(--reddit-light-text)] flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 mr-1 icon">
-                            <circle cx="12" cy="12" r="10"/>
-                            <polyline points="12 6 12 12 16 14"/>
-                        </svg>
-                        Last updated: {{ last_updated }}
-                    </span>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Mobile menu (hidden by default) with Geist icons -->
-        <div id="mobileMenu" class="hidden md:hidden bg-[var(--reddit-card)] pb-2 shadow-inner">
-            <div class="px-2 pt-2 pb-3 space-y-1">
-                <a href="#contributors" class="block px-3 py-2 rounded-md text-base font-medium text-[var(--reddit-text)] hover:bg-[var(--reddit-orange-subtle)] flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5 mr-2 icon">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                        <circle cx="9" cy="7" r="4"/>
-                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                    </svg>
-                    Contributors
-                </a>
-                <a href="#rising-stars" class="block px-3 py-2 rounded-md text-base font-medium text-[var(--reddit-text)] hover:bg-[var(--reddit-orange-subtle)] flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5 mr-2 icon">
-                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                    </svg>
-                    Rising Stars
-                </a>
-                <a href="#activity" class="block px-3 py-2 rounded-md text-base font-medium text-[var(--reddit-text)] hover:bg-[var(--reddit-orange-subtle)] flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5 mr-2 icon">
-                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-                    </svg>
-                    Activity
-                </a>
-                <div class="px-3 py-2 text-sm text-[var(--reddit-light-text)] flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 mr-2 icon">
-                        <circle cx="12" cy="12" r="10"/>
-                        <polyline points="12 6 12 12 16 14"/>
-                    </svg>
-                    Last updated: {{ last_updated }}
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Theme toggle with Geist sun/moon icons -->
-    <div class="theme-switch-wrapper">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5 text-[var(--reddit-light-text)] icon">
-            <circle cx="12" cy="12" r="5"/>
-            <line x1="12" y1="1" x2="12" y2="3"/>
-            <line x1="12" y1="21" x2="12" y2="23"/>
-            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-            <line x1="1" y1="12" x2="3" y2="12"/>
-            <line x1="21" y1="12" x2="23" y2="12"/>
-            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-        </svg>
-        <label class="theme-switch" for="checkbox">
-            <input type="checkbox" id="checkbox" />
-            <div class="slider"></div>
-        </label>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5 text-[var(--reddit-light-text)] icon">
-            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-        </svg>
-    </div>
-
-    <!-- Main content container -->
-    <div class="container mx-auto px-4 py-8 max-w-5xl">
-        <h1 class="text-2xl font-bold mb-4 text-center text-[var(--reddit-text)] flex items-center justify-center">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-6 h-6 mr-2 icon">
-                <rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
-                <rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
-                <line x1="6" y1="6" x2="6" y2="6"/>
-                <line x1="6" y1="18" x2="6" y2="18"/>
-            </svg>
-            Community Analysis for r/{{ subreddit }}
-        </h1>
-        <div class="text-center text-[var(--reddit-light-text)] mb-8 flex items-center justify-center">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 mr-1 icon">
-                <circle cx="12" cy="12" r="10"/>
-                <polyline points="12 6 12 12 16 14"/>
-            </svg>
-            {% if last_updated %}
-                Last updated: {{ last_updated }}
-            {% else %}
-                Data currently unavailable
-            {% endif %}
-        </div>
-
-
-        <!-- Top Contributors section -->
-        <div class="mt-10" id="contributors">
-            <h2 class="text-xl font-bold mb-4 text-[var(--reddit-text)] section-heading">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-6 h-6 mr-2 icon">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                    <circle cx="9" cy="7" r="4"/>
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                </svg>
-                Top 10 Contributors Leaderboard
-            </h2>
-            <div class="reddit-card overflow-hidden supabase-card">
-                <div class="overflow-x-auto">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th class="w-14">
-                                    <div class="flex items-center">
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 mr-1 icon">
-                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                                        </svg>
-                                        Rank
-                                    </div>
-                                </th>
-                                <th>
-                                    <div class="flex items-center">
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 mr-1 icon">
-                                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                                            <circle cx="12" cy="7" r="4"/>
-                                        </svg>
-                                        User
-                                    </div>
-                                </th>
-                                <th class="text-center w-16">
-                                    <div class="flex items-center justify-center">
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 mr-1 icon">
-                                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                                            <polyline points="14 2 14 8 20 8"/>
-                                        </svg>
-                                        Posts
-                                    </div>
-                                </th>
-                                <th class="text-center w-24">
-                                    <div class="flex items-center justify-center">
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 mr-1 icon">
-                                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                                        </svg>
-                                        Comments
-                                    </div>
-                                </th>
-                                <th class="text-center w-20">
-                                    <div class="flex items-center justify-center">
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 mr-1 icon">
-                                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-                                        </svg>
-                                        Activity
-                                    </div>
-                                </th>
-                                <th class="text-center w-24">
-                                    <div class="flex items-center justify-center">
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 mr-1 icon">
-                                            <path d="M23 6l-9.5 9.5-5-5L1 18"/>
-                                            <path d="M17 6h6v6"/>
-                                        </svg>
-                                        Trend
-                                    </div>
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for username, stats in contributors.items() %}
-                            {% if loop.index <= 10 %}
-                            <tr>
-                                <td class="font-semibold">{{ stats.current_rank }}</td>
-                                <td>
-                                    <div class="flex items-center">
-                                        <a href="https://reddit.com/u/{{ username }}" target="_blank" class="reddit-link">
-                                            u/{{ username }}
-                                        </a>
-                                        {% if stats.position_change == 'new' %}
-                                        <span class="ml-2 badge badge-green">
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3 h-3 mr-1 icon">
-                                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                                            </svg>
-                                            New!
-                                        </span>
-                                        {% endif %}
-                                    </div>
-                                </td>
-                                <td class="text-center">{{ stats.post_count }}</td>
-                                <td class="text-center">{{ stats.comment_count }}</td>
-                                <td class="text-center font-medium">{{ stats.total_activity }}</td>
-                                <td class="text-center">
-                                    {% if stats.position_change == 'new' %}
-                                        <span class="badge badge-blue">
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3 h-3 mr-1 icon">
-                                                <circle cx="12" cy="12" r="10"/>
-                                                <line x1="12" y1="8" x2="12" y2="16"/>
-                                                <line x1="8" y1="12" x2="16" y2="12"/>
-                                            </svg>
-                                            New
-                                        </span>
-                                    {% elif stats.position_change > 0 %}
-                                        <span class="text-green-600 font-semibold flex items-center justify-center">
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 mr-0.5 icon">
-                                                <polyline points="18 15 12 9 6 15"/>
-                                            </svg>
-                                            {{ stats.position_change }}
-                                        </span>
-                                    {% elif stats.position_change < 0 %}
-                                        <span class="text-red-600 font-semibold flex items-center justify-center">
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 mr-0.5 icon">
-                                                <polyline points="6 9 12 15 18 9"/>
-                                            </svg>
-                                            {{ stats.position_change|abs }}
-                                        </span>
-                                    {% else %}
-                                        <span class="text-gray-500">
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 icon">
-                                                <line x1="5" y1="12" x2="19" y2="12"/>
-                                            </svg>
-                                        </span>
-                                    {% endif %}
-                                </td>
-                            </tr>
+        <section>
+            <h2>Top contributors</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="rank">#</th>
+                        <th>User</th>
+                        <th class="num hide-sm">Posts</th>
+                        <th class="num hide-sm">Comments</th>
+                        <th class="num">Activity</th>
+                        <th class="num">Trend</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for username, stats in contributors.items() %}
+                    {% if loop.index <= 10 %}
+                    <tr>
+                        <td class="rank">{{ stats.current_rank }}</td>
+                        <td>
+                            <a href="https://reddit.com/u/{{ username }}" target="_blank" rel="noopener">u/{{ username }}</a>
+                        </td>
+                        <td class="num hide-sm">{{ stats.post_count }}</td>
+                        <td class="num hide-sm">{{ stats.comment_count }}</td>
+                        <td class="num">{{ stats.total_activity }}</td>
+                        <td class="num">
+                            {% if stats.position_change == 'new' %}
+                                <span class="trend-new">new</span>
+                            {% elif stats.position_change > 0 %}
+                                <span class="trend-up">&uarr; {{ stats.position_change }}</span>
+                            {% elif stats.position_change < 0 %}
+                                <span class="trend-down">&darr; {{ stats.position_change|abs }}</span>
+                            {% else %}
+                                <span class="trend-flat">&mdash;</span>
                             {% endif %}
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+                        </td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
 
-        <!-- Rising Stars Section -->
-        {% if rising_stars %}
-        <div class="mt-10" id="rising-stars">
-            <h2 class="text-xl font-bold mb-4 text-[var(--reddit-text)] section-heading">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-6 h-6 mr-2 icon">
-                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                </svg>
-                Rising Stars
-            </h2>
-            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {% for star in rising_stars %}
-                <div class="reddit-card relative overflow-hidden border-[var(--reddit-border)] supabase-card">
-                    <div class="p-5">
-                        <div class="mb-3">
-                            <div class="flex items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5 mr-1 icon text-[var(--reddit-orange)]">
-                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                                    <circle cx="12" cy="7" r="4"/>
-                                </svg>
-                                <a href="https://reddit.com/u/{{ star.username }}" target="_blank" class="reddit-link text-lg">
-                                    u/{{ star.username }}
-                                </a>
-                            </div>
-                            <div class="text-sm text-[var(--reddit-light-text)] mt-1 flex items-center">
-                                Rank #{{ star.stats.current_rank }}
-                            </div>
-                        </div>
-                        
-                        <div class="bg-[var(--reddit-orange-subtle)] rounded-md p-3 mb-4">
-                            <div class="text-[var(--reddit-orange)] font-medium flex items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 mr-1 icon">
-                                    <circle cx="12" cy="12" r="10"/>
-                                    <line x1="12" y1="8" x2="12" y2="16"/>
-                                    <line x1="8" y1="12" x2="16" y2="12"/>
-                                </svg>
-                                {{ star.reason }}
-                            </div>
-                        </div>
-                        
-                        <div class="space-y-2">
-                            <div class="flex justify-between items-center py-1 stat-item">
-                                <span class="text-[var(--reddit-light-text)] flex items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 mr-1 icon">
-                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                                        <polyline points="14 2 14 8 20 8"/>
-                                    </svg>
-                                    Posts
-                                </span>
-                                <span class="font-medium">{{ star.stats.post_count }}</span>
-                            </div>
-                            <div class="flex justify-between items-center py-1 stat-item">
-                                <span class="text-[var(--reddit-light-text)] flex items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 mr-1 icon">
-                                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                                    </svg>
-                                    Comments
-                                </span>
-                                <span class="font-medium">{{ star.stats.comment_count }}</span>
-                            </div>
-                            <div class="flex justify-between items-center py-1 stat-item">
-                                <span class="text-[var(--reddit-light-text)] flex items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 mr-1 icon">
-                                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-                                    </svg>
-                                    Activity
-                                </span>
-                                <span class="font-medium">{{ star.stats.total_activity }}</span>
-                            </div>
-                            {% if star.stats.streak %}
-                            <div class="flex justify-between items-center py-1 stat-item">
-                                <span class="text-[var(--reddit-light-text)] flex items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 mr-1 icon">
-                                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                                        <polyline points="22 4 12 14.01 9 11.01"/>
-                                    </svg>
-                                    Streak
-                                </span>
-                                <span class="font-medium">{{ star.stats.streak }} days</span>
-                            </div>
-                            {% endif %}
-                        </div>
-                        
-                        {% if star.stats.position_change != 'new' and star.stats.position_change > 0 %}
-                        <div class="mt-4 pt-3 border-t border-[var(--reddit-border)] text-center">
-                            <span class="badge badge-green">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3 h-3 mr-1 icon">
-                                    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
-                                </svg>
-                                Up {{ star.stats.position_change }} ranks
-                            </span>
-                        </div>
-                        {% endif %}
-                    </div>
-                </div>
-                {% endfor %}
+        <section>
+            <h2>Activity by hour (ET)</h2>
+            <div class="chart-wrap">
+                <canvas id="activityChart"></canvas>
             </div>
-        </div>
-        {% endif %}
+            <div id="chartNote" class="chart-note"></div>
+        </section>
 
-        <!-- Activity Chart Section -->
-        <div class="mt-10" id="activity">
-            <h2 class="text-xl font-bold mb-4 text-[var(--reddit-text)] section-heading">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-6 h-6 mr-2 icon">
-                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-                </svg>
-                Community Activity Times
-            </h2>
-            <div class="reddit-card p-5 activity-card supabase-card">
-                <!-- Loading indicator with Geist loading icon -->
-                <div id="chartLoading" class="flex justify-center items-center py-8">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-8 h-8 loading-spinner text-[var(--reddit-orange)] icon">
-                        <circle cx="12" cy="12" r="10" stroke-opacity="0.25"/>
-                        <path d="M12 2a10 10 0 0 1 10 10" stroke-opacity="1"/>
-                    </svg>
-                    <span class="ml-3 text-[var(--reddit-text)]">Loading chart...</span>
-                </div>
-                
-                <!-- Chart container -->
-                <div style="height: 300px; position: relative;">
-                    <canvas id="activityChart" class="w-full h-full"></canvas>
-                </div>
-                
-                <!-- Insights section with Geist icons -->
-                <div id="chartInsights" class="mt-5 pt-4 border-t border-[var(--reddit-border)] text-[var(--reddit-text)]"></div>
-            </div>
-        </div>
-        
-        
+        <footer>
+            <span>Made by Alex</span>
+            <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">Theme</button>
+        </footer>
     </div>
 
-    <!-- Back to Top Button with Geist arrow-up icon -->
-    <button id="backToTopBtn" class="fixed bottom-4 right-4 bg-[var(--reddit-card)] text-[var(--reddit-text)] p-3 rounded-full shadow-lg z-50 opacity-0 pointer-events-none transition-opacity duration-300 border border-[var(--reddit-border)]">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-5 w-5 icon">
-            <polyline points="18 15 12 9 6 15"/>
-        </svg>
-    </button>
-    
-    <!-- Footer with Geist Icons -->
-    <footer class="mt-16 py-6 border-t border-[var(--reddit-border)]">
-            <div class="flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 mr-1 icon">
-                    <circle cx="12" cy="12" r="10"/>
-                    <line x1="12" y1="8" x2="12" y2="12"/>
-                    <line x1="12" y1="16" x2="12.01" y2="16"/>
-                </svg>
-                <span>Made by Alex</span>
-            </div>
-        </div>
-    </footer>
-    
-    <!-- Scripts -->
     <script>
-    // Main application script - handles all interactive features
-    document.addEventListener('DOMContentLoaded', function() {
-        // Initialize components
-        initMobileMenu();
-        initBackToTop();
-        initThemeToggle();
-        initFilters();
-        initFilterToggle(); // Added new function to handle filter toggle
-        initChart();
-        
-        // Hide the loading overlay when everything is ready
-        window.addEventListener('load', function() {
-            document.querySelector('.loading-overlay').style.display = 'none';
-        });
-        
-        // Make sections collapsible on mobile
-        makeCollapsible();
-        window.addEventListener('resize', makeCollapsible);
-    });
-    
-    // Mobile menu functionality
-    function initMobileMenu() {
-        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-        const mobileMenu = document.getElementById('mobileMenu');
-        
-        if (mobileMenuBtn && mobileMenu) {
-            mobileMenuBtn.addEventListener('click', function() {
-                mobileMenu.classList.toggle('hidden');
-            });
-            
-            // Close menu when clicking on a navigation link
-            const navLinks = mobileMenu.querySelectorAll('a');
-            navLinks.forEach(link => {
-                link.addEventListener('click', function() {
-                    mobileMenu.classList.add('hidden');
-                });
-            });
-        }
-        
-        // Smooth scroll for anchor links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function(e) {
-                e.preventDefault();
-                
-                const targetId = this.getAttribute('href');
-                const targetElement = document.querySelector(targetId);
-                
-                if (targetElement) {
-                    // Add offset for the sticky header
-                    const headerOffset = 70;
-                    const elementPosition = targetElement.getBoundingClientRect().top;
-                    const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-                    
-                    window.scrollTo({
-                        top: offsetPosition,
-                        behavior: 'smooth'
-                    });
-                }
-            });
-        });
-    }
-    
-    // Filter toggle functionality
-    function initFilterToggle() {
-        const toggleButton = document.getElementById('toggleFilters');
-        const filtersContainer = document.getElementById('filtersContainer');
-        const toggleText = document.getElementById('filterToggleText');
-        
-        if (toggleButton && filtersContainer) {
-            toggleButton.addEventListener('click', function() {
-                if (filtersContainer.style.display === 'none') {
-                    filtersContainer.style.display = 'grid';
-                    toggleText.textContent = 'Hide';
-                } else {
-                    filtersContainer.style.display = 'none';
-                    toggleText.textContent = 'Show';
-                }
-            });
-        }
-    }
-    
-    // Back to top button
-    function initBackToTop() {
-        const backToTopBtn = document.getElementById('backToTopBtn');
-        
-        window.addEventListener('scroll', function() {
-            if (window.pageYOffset > 300) {
-                backToTopBtn.classList.add('opacity-100');
-                backToTopBtn.classList.remove('pointer-events-none');
-            } else {
-                backToTopBtn.classList.remove('opacity-100');
-                backToTopBtn.classList.add('pointer-events-none');
-            }
-        });
-        
-        backToTopBtn.addEventListener('click', function() {
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
-        });
-    }
-    
-    // Theme toggle functionality
-    function initThemeToggle() {
-        const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
-        
-        // Check for saved theme preference
-        const currentTheme = localStorage.getItem('theme') || 'dark';
-        document.documentElement.setAttribute('data-theme', currentTheme);
-        
-        // Set checkbox based on current theme
-        if (currentTheme === 'dark') {
-            toggleSwitch.checked = true;
-        }
-        
-        // Handle theme switch
-        function switchTheme(e) {
-            if (e.target.checked) {
-                document.documentElement.setAttribute('data-theme', 'dark');
-                localStorage.setItem('theme', 'dark');
-                updateChartColors('dark');
-            } else {
-                document.documentElement.setAttribute('data-theme', 'light');
-                localStorage.setItem('theme', 'light');
-                updateChartColors('light');
-            }
-        }
-        
-        // Update chart colors when theme changes
-        function updateChartColors(theme) {
-            if (window.activityChart) {
-                const isDark = theme === 'dark';
-                
-                // Update grid colors
-                window.activityChart.options.scales.y.grid.color = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)';
-                window.activityChart.options.scales.x.ticks.color = isDark ? '#D7DADC' : '#1A1A1B';
-                window.activityChart.options.scales.y.ticks.color = isDark ? '#D7DADC' : '#1A1A1B';
-                
-                // Update tooltip style
-                window.activityChart.options.plugins.tooltip.backgroundColor = isDark ? 'rgba(70, 70, 70, 0.9)' : 'rgba(26, 26, 27, 0.9)';
+    (function () {
+        const root = document.documentElement;
+        const saved = localStorage.getItem('theme') || 'light';
+        root.setAttribute('data-theme', saved);
 
-                // Update legend text color
-                window.activityChart.options.plugins.legend.labels.color = isDark ? '#ffffff' : '#1A1A1B';
-                
-                // Update chart
-                window.activityChart.update();
-            }
+        const toggle = document.getElementById('themeToggle');
+        toggle.addEventListener('click', () => {
+            const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            root.setAttribute('data-theme', next);
+            localStorage.setItem('theme', next);
+            renderChart();
+        });
+
+        let chart = null;
+        const data = JSON.parse('{{ activity_data|tojson|safe }}');
+
+        function readVar(name) {
+            return getComputedStyle(root).getPropertyValue(name).trim();
         }
-        
-        toggleSwitch.addEventListener('change', switchTheme, false);
-        
-        // Apply theme to charts on initial load
-        setTimeout(() => {
-            updateChartColors(currentTheme);
-        }, 1000);
-    }
-    
-    // Filtering functionality
-    function initFilters() {
-        // Get filter elements
-        const userTypeFilter = document.getElementById('userTypeFilter');
-        const sortOrderFilter = document.getElementById('sortOrderFilter');
-        const timeRangeFilter = document.getElementById('timeRangeFilter');
-        const resetFiltersBtn = document.getElementById('resetFilters');
-        
-        // Skip if filters aren't available
-        if (!userTypeFilter || !sortOrderFilter) return;
-        
-        // Filter the user rows based on selected filters
-        function applyFilters() {
-            const userType = userTypeFilter.value;
-            const sortOrder = sortOrderFilter.value;
-            const timeRange = timeRangeFilter ? timeRangeFilter.value : 'all';
-            
-            // Get all user rows in the table
-            const userTable = document.querySelector('table');
-            if (!userTable) return;
-            
-            const userRows = Array.from(userTable.querySelectorAll('tbody tr'));
-            
-            // Filter by user type
-            let filteredRows = userRows;
-            if (userType === 'new') {
-                filteredRows = userRows.filter(row => {
-                    const newBadge = row.querySelector('.badge-green');
-                    return newBadge !== null;
-                });
-            } else if (userType === 'rising') {
-                filteredRows = userRows.filter(row => {
-                    const trend = row.querySelector('td:nth-child(6)');
-                    return trend && trend.textContent.includes('↑');
-                });
-            } else if (userType === 'top') {
-                filteredRows = userRows.slice(0, 5);
+
+        function renderChart() {
+            const note = document.getElementById('chartNote');
+            if (!data || data.length === 0) {
+                note.textContent = 'No activity data available.';
+                return;
             }
-            
-            // Sort by selected criteria
-            if (sortOrder === 'posts') {
-                filteredRows.sort((a, b) => {
-                    try {
-                        const postsA = parseInt(a.querySelector('td:nth-child(3)').textContent.trim()) || 0;
-                        const postsB = parseInt(b.querySelector('td:nth-child(3)').textContent.trim()) || 0;
-                        return postsB - postsA;
-                    } catch (error) {
-                        console.error('Error sorting by posts:', error);
-                        return 0;
-                    }
-                });
-            } else if (sortOrder === 'comments') {
-                filteredRows.sort((a, b) => {
-                    try {
-                        const commentsA = parseInt(a.querySelector('td:nth-child(4)').textContent.trim()) || 0;
-                        const commentsB = parseInt(b.querySelector('td:nth-child(4)').textContent.trim()) || 0;
-                        return commentsB - commentsA;
-                    } catch (error) {
-                        console.error('Error sorting by comments:', error);
-                        return 0;
-                    }
-                });
-            } else if (sortOrder === 'trend-up') {
-                filteredRows.sort((a, b) => {
-                    try {
-                        const trendA = a.querySelector('td:nth-child(6)');
-                        const trendB = b.querySelector('td:nth-child(6)');
-                        
-                        // Extract the numeric part from trend up elements
-                        const getUpValue = (el) => {
-                            if (!el) return -999;
-                            const svgUp = el.querySelector('svg[viewBox="0 0 24 24"] polyline[points="18 15 12 9 6 15"]');
-                            const match = svgUp && el.textContent.match(/\d+/);
-                            return match ? parseInt(match[0]) : -999;
-                        };
-                        
-                        const valueA = getUpValue(trendA);
-                        const valueB = getUpValue(trendB);
-                        
-                        return valueB - valueA;
-                    } catch (error) {
-                        console.error('Error sorting by trend up:', error);
-                        return 0;
-                    }
-                });
-            } else if (sortOrder === 'trend-down') {
-                filteredRows.sort((a, b) => {
-                    try {
-                        const trendA = a.querySelector('td:nth-child(6)');
-                        const trendB = b.querySelector('td:nth-child(6)');
-                        
-                        // Extract the numeric part from trend down elements
-                        const getDownValue = (el) => {
-                            if (!el) return -999;
-                            const svgDown = el.querySelector('svg[viewBox="0 0 24 24"] polyline[points="6 9 12 15 18 9"]');
-                            const match = svgDown && el.textContent.match(/\d+/);
-                            return match ? parseInt(match[0]) : -999;
-                        };
-                        
-                        const valueA = getDownValue(trendA);
-                        const valueB = getDownValue(trendB);
-                        
-                        return valueB - valueA;
-                    } catch (error) {
-                        console.error('Error sorting by trend down:', error);
-                        return 0;
-                    }
-                });
-            }
-            
-            // Hide all rows first
-            userRows.forEach(row => row.style.display = 'none');
-            
-            // Show filtered rows
-            filteredRows.forEach(row => row.style.display = '');
-            
-            // Update the chart based on time range
-            if (window.activityChart && window.activityData) {
-                let hoursToShow;
-                
-                switch(timeRange) {
-                    case 'peak':
-                        // Show only peak hours (those above average)
-                        const avgActivity = window.activityChart.data.datasets[1].data[0];
-                        hoursToShow = window.activityData.map((d, i) => d.count > avgActivity ? i : null).filter(i => i !== null);
-                        break;
-                    case 'morning':
-                        hoursToShow = Array.from({length: 7}, (_, i) => i + 6); // 6-12
-                        break;
-                    case 'afternoon':
-                        hoursToShow = Array.from({length: 6}, (_, i) => i + 12); // 12-18
-                        break;
-                    case 'evening':
-                        hoursToShow = Array.from({length: 6}, (_, i) => i + 18); // 18-24
-                        break;
-                    case 'night':
-                        hoursToShow = Array.from({length: 6}, (_, i) => i); // 0-6
-                        break;
-                    default:
-                        hoursToShow = Array.from({length: 24}, (_, i) => i); // All hours
-                }
-                
-                // Create a new filtered dataset
-                const filteredData = window.activityChart.data.datasets[0].data.map((value, index) => 
-                    hoursToShow.includes(index) ? value : null
-                );
-                
-                // Apply the filter
-                window.activityChart.data.datasets[0].data = timeRange === 'all' ? 
-                    window.activityData.map(d => d.count) : filteredData;
-                
-                window.activityChart.update();
-            }
-        }
-        
-        // Register event listeners
-        if (userTypeFilter) userTypeFilter.addEventListener('change', applyFilters);
-        if (sortOrderFilter) sortOrderFilter.addEventListener('change', applyFilters);
-        if (timeRangeFilter) timeRangeFilter.addEventListener('change', applyFilters);
-        if (resetFiltersBtn) {
-            resetFiltersBtn.addEventListener('click', () => {
-                userTypeFilter.value = 'all';
-                sortOrderFilter.value = 'rank';
-                if (timeRangeFilter) timeRangeFilter.value = 'all';
-                applyFilters();
-            });
-        }
-    }
-    
-    // Make sections collapsible on mobile
-    function makeCollapsible() {
-        if (window.innerWidth <= 768) {
-            const sections = document.querySelectorAll('.mt-10');
-            
-            sections.forEach((section, index) => {
-                // Skip if already processed
-                if (section.querySelector('.toggle-collapse')) return;
-                
-                if (index === 0) return; // Skip the first section
-                
-                // Add collapsible class
-                const content = section.querySelector('.reddit-card');
-                if (!content) return;
-                
-                content.classList.add('collapsible-section');
-                content.style.overflow = 'hidden';
-                content.style.maxHeight = '3.5rem';
-                content.style.transition = 'max-height 0.3s ease';
-                
-                // Add toggle button
-                const heading = section.querySelector('h2');
-                if (!heading) return;
-                
-                const toggleBtn = document.createElement('button');
-                toggleBtn.className = 'toggle-collapse supabase-button w-full text-center mt-2 p-2 flex items-center justify-center';
-                toggleBtn.innerHTML = `
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 mr-1 icon">
-                        <polyline points="6 9 12 15 18 9"/>
-                    </svg>
-                    Show More
-                `;
-                toggleBtn.setAttribute('aria-expanded', 'false');
-                
-                section.appendChild(toggleBtn);
-                
-                // Toggle functionality
-                toggleBtn.addEventListener('click', () => {
-                    if (content.style.maxHeight === '3.5rem') {
-                        content.style.maxHeight = '2000px';
-                        toggleBtn.innerHTML = `
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 mr-1 icon">
-                                <polyline points="18 15 12 9 6 15"/>
-                            </svg>
-                            Show Less
-                        `;
-                        toggleBtn.setAttribute('aria-expanded', 'true');
-                    } else {
-                        content.style.maxHeight = '3.5rem';
-                        toggleBtn.innerHTML = `
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 mr-1 icon">
-                                <polyline points="6 9 12 15 18 9"/>
-                            </svg>
-                            Show More
-                        `;
-                        toggleBtn.setAttribute('aria-expanded', 'false');
-                    }
-                });
-            });
-        }
-    }
-    
-    // Optimized chart initialization
-    function initChart() {
-        // Show loading indicator
-        const chartLoading = document.getElementById('chartLoading');
-        const chartInsights = document.getElementById('chartInsights');
-        
-        // Delay chart rendering to ensure DOM is fully loaded
-        setTimeout(() => {
-            try {
-                // Get data and prepare chart
-                const activityData = JSON.parse('{{ activity_data|tojson|safe }}');
-                
-                // Store for later use by filters
-                window.activityData = activityData;
-                
-                // Skip rendering if there's no meaningful data
-                if (!activityData || activityData.length === 0) {
-                    chartLoading.innerHTML = `
-                        <div class="text-center text-[var(--reddit-light-text)] flex flex-col items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-8 h-8 mb-2 icon">
-                                <circle cx="12" cy="12" r="10"/>
-                                <line x1="12" y1="8" x2="12" y2="12"/>
-                                <line x1="12" y1="16" x2="12.01" y2="16"/>
-                            </svg>
-                            <p>No activity data available</p>
-                        </div>
-                    `;
-                    return;
-                }
-                
-                // Get necessary DOM elements
-                const ctx = document.getElementById('activityChart').getContext('2d');
-                if (!ctx) {
-                    console.error('Could not get chart context');
-                    return;
-                }
-                
-                // Determine if we're in dark mode
-                const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
-                const textColor = isDarkMode ? '#D7DADC' : '#1A1A1B';
-                const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)';
-                
-                // Calculate average and prepare line data (simplified calculation)
-                let totalActivity = 0;
-                for (let i = 0; i < activityData.length; i++) {
-                    totalActivity += activityData[i].count;
-                }
-                const avgActivity = activityData.length > 0 ? totalActivity / activityData.length : 0;
-                
-                // Create simpler chart configuration
-                const config = {
-                    type: 'bar',
-                    data: {
-                        labels: activityData.map(d => `${d.hour}:00`),
-                        datasets: [
-                            {
-                                label: 'Activity',
-                                data: activityData.map(d => d.count),
-                                backgroundColor: 'rgba(255, 150, 102, 0.2)',
-                                borderColor: '#FF9666',
-                                borderWidth: 1,
-                                borderRadius: 4
-                            },
-                            {
-                                label: 'Average',
-                                data: Array(activityData.length).fill(avgActivity),
-                                type: 'line',
-                                fill: false,
-                                borderColor: 'rgba(75, 192, 192, 0.7)',
-                                borderDash: [5, 5],
-                                borderWidth: 2,
-                                pointRadius: 0
+
+            const total = data.reduce((s, d) => s + d.count, 0);
+            const avg = total / data.length;
+            const peak = data.reduce((m, d) => d.count > m.count ? d : m, data[0]);
+
+            note.innerHTML = `Peak hour: <strong>${peak.hour}:00</strong> &middot; Average: <strong>${avg.toFixed(1)}</strong> per hour`;
+
+            const ctx = document.getElementById('activityChart').getContext('2d');
+            const text = readVar('--muted');
+            const border = readVar('--border');
+            const accent = readVar('--accent');
+
+            if (chart) chart.destroy();
+            chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.map(d => d.hour),
+                    datasets: [{
+                        data: data.map(d => d.count),
+                        backgroundColor: accent,
+                        borderWidth: 0,
+                        borderRadius: 0,
+                        barPercentage: 0.7,
+                        categoryPercentage: 0.9
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            displayColors: false,
+                            backgroundColor: readVar('--text'),
+                            titleColor: readVar('--bg'),
+                            bodyColor: readVar('--bg'),
+                            titleFont: { family: 'Inter', weight: '500', size: 12 },
+                            bodyFont: { family: 'Inter', size: 12 },
+                            padding: 8,
+                            callbacks: {
+                                title: (items) => `${items[0].label}:00 ET`,
+                                label: (item) => `${item.raw} activities`
                             }
-                        ]
+                        }
                     },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                display: true,
-                                labels: { color: isDarkMode ? '#ffffff' : textColor  }
-                            },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        const value = context.raw;
-                                        if (context.datasetIndex === 0) {
-                                            return `Activities: ${value}`;
-                                        } else {
-                                            return `Average: ${value.toFixed(1)}`;
-                                        }
-                                    }
-                                }
+                    scales: {
+                        x: {
+                            grid: { display: false, drawBorder: false },
+                            border: { display: false },
+                            ticks: {
+                                color: text,
+                                font: { family: 'Inter', size: 11 },
+                                maxRotation: 0,
+                                autoSkipPadding: 16
                             }
                         },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                grid: { color: gridColor },
-                                ticks: { color: textColor }
-                            },
-                            x: {
-                                grid: { display: false },
-                                ticks: { color: textColor }
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: border, drawBorder: false },
+                            border: { display: false },
+                            ticks: {
+                                color: text,
+                                font: { family: 'Inter', size: 11 },
+                                maxTicksLimit: 4
                             }
                         }
                     }
-                };
-                
-                // Create and store chart instance
-                window.activityChart = new Chart(ctx, config);
-                
-                // Hide loading indicator
-                chartLoading.style.display = 'none';
-                
-                // Generate insights
-                generateChartInsights(activityData, avgActivity);
-                
-            } catch (error) {
-                // Handle errors gracefully
-                console.error('Error rendering chart:', error);
-                chartLoading.innerHTML = `
-                    <div class="text-center text-red-500 flex flex-col items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-8 h-8 mb-2 icon">
-                            <circle cx="12" cy="12" r="10"/>
-                            <line x1="12" y1="8" x2="12" y2="12"/>
-                            <line x1="12" y1="16" x2="12.01" y2="16"/>
-                        </svg>
-                        <p>Error loading chart. Please try refreshing the page.</p>
-                    </div>
-                `;
-            }
-        }, 300); // Short delay to ensure DOM is ready
-    }
-    
-    // Function to generate insights
-    function generateChartInsights(activityData, avgActivity) {
-        try {
-            // Simple insights without complex calculations
-            const chartInsights = document.getElementById('chartInsights');
-            
-            // Find peak hour (simplified)
-            let peakHour = activityData[0];
-            let lowHour = activityData[0];
-            
-            for (let i = 1; i < activityData.length; i++) {
-                if (activityData[i].count > peakHour.count) {
-                    peakHour = activityData[i];
                 }
-                if (activityData[i].count < lowHour.count) {
-                    lowHour = activityData[i];
-                }
-            }
-            
-            // Find peak hours (above average)
-            const peakHours = [];
-            for (let i = 0; i < activityData.length; i++) {
-                if (activityData[i].count > avgActivity) {
-                    peakHours.push(`${activityData[i].hour}:00`);
-                }
-            }
-            
-            // Generate HTML
-            chartInsights.innerHTML = `
-                <h3 class="font-semibold text-lg mb-3 flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5 mr-2 icon">
-                        <circle cx="12" cy="12" r="10"/>
-                        <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
-                        <line x1="9" y1="9" x2="9.01" y2="9"/>
-                        <line x1="15" y1="9" x2="15.01" y2="9"/>
-                    </svg>
-                    Activity Insights
-                </h3>
-                <div class="grid gap-3 md:grid-cols-2">
-                    <div class="p-3 rounded-md bg-[var(--reddit-orange-subtle)]">
-                        <div class="font-medium flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 mr-1 icon text-[var(--reddit-orange)]">
-                                <circle cx="12" cy="12" r="10"/>
-                                <line x1="22" y1="12" x2="18" y2="12"/>
-                                <line x1="6" y1="12" x2="2" y2="12"/>
-                                <line x1="12" y1="6" x2="12" y2="2"/>
-                                <line x1="12" y1="22" x2="12" y2="18"/>
-                            </svg>
-                            Peak Activity
-                        </div>
-                        <div class="text-[var(--reddit-text)] mt-1">
-                            <span class="font-bold">${peakHour.hour}:00 UTC</span> with ${peakHour.count} activities
-                        </div>
-                    </div>
-                    <div class="p-3 rounded-md bg-[var(--table-header)]">
-                        <div class="font-medium flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 mr-1 icon">
-                                <circle cx="12" cy="12" r="10"/>
-                                <polyline points="12 6 12 12 16 14"/>
-                            </svg>
-                            Best Time to Post
-                        </div>
-                        <div class="text-[var(--reddit-text)] mt-1">
-                            <span class="font-bold">${peakHour.hour}:00 UTC</span> for maximum engagement
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            // Add peak hours only if there are some
-            if (peakHours.length > 0) {
-                // Limit to 8 hours to prevent overflow
-                const displayedPeakHours = peakHours.length > 8 
-                    ? peakHours.slice(0, 8).join(', ') + '...' 
-                    : peakHours.join(', ');
-                    
-                const peakHoursHtml = `
-                    <div class="mt-3 p-3 rounded-md border border-[var(--reddit-border)]">
-                        <div class="font-medium flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 mr-1 icon">
-                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                                <polyline points="22 4 12 14.01 9 11.01"/>
-                            </svg>
-                            Active Hours
-                        </div>
-                        <div class="text-[var(--reddit-text)] mt-1">
-                            ${displayedPeakHours} <span class="text-[var(--reddit-light-text)] text-sm">(above average)</span>
-                        </div>
-                    </div>
-                `;
-                
-                // Append to insights
-                chartInsights.insertAdjacentHTML('beforeend', peakHoursHtml);
-            }
-            
-        } catch (error) {
-            console.error('Error generating insights:', error);
+            });
         }
-    }
+
+        renderChart();
+    })();
     </script>
 </body>
 </html>

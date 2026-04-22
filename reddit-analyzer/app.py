@@ -1,5 +1,6 @@
 from flask import Flask, render_template, jsonify
 from datetime import datetime
+from zoneinfo import ZoneInfo
 from pymongo import MongoClient
 import os
 from dotenv import load_dotenv
@@ -9,6 +10,33 @@ if os.getenv('FLASK_ENV') == 'development':
     load_dotenv()
 
 app = Flask(__name__)
+
+EASTERN = ZoneInfo('America/New_York')
+UTC = ZoneInfo('UTC')
+
+
+def _to_eastern(dt):
+    """Convert a (possibly naive UTC) datetime to America/New_York."""
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=UTC)
+    return dt.astimezone(EASTERN)
+
+
+def _shift_activity_to_eastern(activity_data):
+    """Shift hourly activity buckets from UTC to America/New_York."""
+    if not activity_data:
+        return []
+    now_utc = datetime.now(UTC)
+    offset_hours = int(now_utc.astimezone(EASTERN).utcoffset().total_seconds() // 3600)
+    buckets = {str(h).zfill(2): 0 for h in range(24)}
+    for entry in activity_data:
+        try:
+            utc_hour = int(entry['hour'])
+        except (KeyError, ValueError, TypeError):
+            continue
+        eastern_hour = (utc_hour + offset_hours) % 24
+        buckets[str(eastern_hour).zfill(2)] += entry.get('count', 0)
+    return [{'hour': h, 'count': buckets[h]} for h in sorted(buckets.keys())]
 
 def get_db():
     """Initialize MongoDB client with error handling"""
@@ -109,56 +137,24 @@ def index():
             {'subreddit': subreddit},
             sort=[('date', -1)]
         )
-        
-        # Find rising stars (new users with high activity or users with big rank jumps)
-        rising_stars = []
-        if latest_data and 'contributors' in latest_data:
-            for username, stats in latest_data['contributors'].items():
-                # New user with high activity (in top 15)
-                if stats.get('position_change') == 'new' and stats.get('current_rank', 99) <= 15:
-                    rising_stars.append({
-                        'username': username,
-                        'reason': 'New user with high activity',
-                        'stats': stats
-                    })
-                # Big rank improvement (moved up at least 5 places)
-                elif isinstance(stats.get('position_change'), (int, float)) and stats.get('position_change', 0) >= 5:
-                    rising_stars.append({
-                        'username': username,
-                        'reason': f'Moved up {stats["position_change"]} places',
-                        'stats': stats
-                    })
-                # Long streak (active for at least 5 days)
-                elif stats.get('streak', 0) >= 5:
-                    rising_stars.append({
-                        'username': username,
-                        'reason': f'Active for {stats["streak"]} days in a row',
-                        'stats': stats
-                    })
-            
-            # Sort by rank and limit to top 5
-            rising_stars = sorted(rising_stars, key=lambda x: x['stats'].get('current_rank', 99))[:5]
-        
+
         if latest_data:
             return render_template('index.html',
                                 contributors=latest_data['contributors'],
-                                rising_stars=rising_stars,
                                 subreddit=subreddit,
-                                activity_data=latest_data['activity_data'],
-                                last_updated=latest_data['date'].strftime('%Y-%m-%d %H:%M UTC'))
-        
+                                activity_data=_shift_activity_to_eastern(latest_data.get('activity_data', [])),
+                                last_updated=_to_eastern(latest_data['date']).strftime('%Y-%m-%d %H:%M ET'))
+
         return render_template('index.html',
                             contributors={},
-                            rising_stars=[],
                             subreddit=subreddit,
                             activity_data=[],
                             last_updated=None)
-                            
+
     except Exception as e:
         print(f"Error in index route: {e}")
         return render_template('index.html',
                             contributors={},
-                            rising_stars=[],
                             subreddit=subreddit,
                             activity_data=[],
                             last_updated=None)
